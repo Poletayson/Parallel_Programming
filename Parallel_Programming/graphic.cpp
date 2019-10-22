@@ -503,9 +503,103 @@ QPixmap* Graphic::MyFilter (int k)  //мой фильтр
     return new QPixmap (pxm->copy(1, 1, reserve->pixmap().width(), reserve->pixmap().height()));
 }
 
+QColor Graphic::matrixMul(QColor colors[3][3], int matrix[3][3])
+{
+    int r = 0, g = 0, b = 0;
+    r = colors[0][0].red() * matrix[0][0] + colors[0][1].red() * matrix[0][1] + colors[0][2].red() * matrix[0][2] +
+            colors[1][0].red() * matrix[1][0] + colors[1][1].red() * matrix[1][1] + colors[1][2].red() * matrix[1][2] +
+            colors[2][0].red() * matrix[2][0] + colors[2][1].red() * matrix[2][1] + colors[2][2].red() * matrix[2][2];
+    g = colors[0][0].green() * matrix[0][0] + colors[0][1].green() * matrix[0][1] + colors[0][2].green() * matrix[0][2] +
+            colors[1][0].green() * matrix[1][0] + colors[1][1].green() * matrix[1][1] + colors[1][2].green() * matrix[1][2] +
+            colors[2][0].green() * matrix[2][0] + colors[2][1].green() * matrix[2][1] + colors[2][2].green() * matrix[2][2];
+    g = colors[0][0].blue() * matrix[0][0] + colors[0][1].blue() * matrix[0][1] + colors[0][2].blue() * matrix[0][2] +
+            colors[1][0].blue() * matrix[1][0] + colors[1][1].blue() * matrix[1][1] + colors[1][2].blue() * matrix[1][2] +
+            colors[2][0].blue() * matrix[2][0] + colors[2][1].blue() * matrix[2][1] + colors[2][2].blue() * matrix[2][2];
+    return QColor (r, g, b);
+}
+
+QColor Graphic::colorNormir(QColor colorX, QColor colorY)
+{
+    qreal rx = colorX.redF(), gx = colorX.greenF(), bx = colorX.blueF();
+    qreal ry = colorY.redF(), gy = colorY.greenF(), by = colorY.blueF();
+    rx = sqrt(rx * rx + ry * ry);
+    gx = sqrt(gx * gx + gy * gy);
+    bx = sqrt(bx * bx + by * by);
+    return QColor (rx, gx, bx);
+}
+
+bool Graphic::sobelOperator(QImage image)
+{
+    int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+    int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+
+    int w = image.width();
+    int h = image.height();
+    QColor col[3][3];
+
+    QImage newImage = QImage (image);
+    float r,g,b;
+    int kx, ky = -1;     //обозначают границы
+    for (int i = 0; i < w; i++) {
+        kx = -1;
+        for (int j = 0; j < h; j++) {
+            col[0][0] = image.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[0][1] = image.pixelColor(i - (kx < 0 ? 0 : 1), j);
+            col[0][2] = image.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            col[1][0] = image.pixelColor(i, j - (ky < 0 ? 0 : 1));
+            col[1][1] = image.pixelColor(i, j);
+            col[1][2] = image.pixelColor(i, j + (ky > 0 ? 0 : 1));
+            col[2][0] = image.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[2][1] = image.pixelColor(i + (kx > 0 ? 0 : 1), j);
+            col[2][2] = image.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            r = col[1][1].red();
+            g = col[1][1].green();
+            b = col[1][1].blue();
+
+        }
+    }
+//    image
+
+//    QImage newImage;
+//    if (reserve != nullptr)
+//    {
+//        newImage = *new QImage (reserve->pixmap().toImage());
+//        QColor* col;
+//        qreal bright;           //яркость
+//        for (int i = 0; i < newImage.width(); i++)
+//            for (int j = 0; j < newImage.height(); j++)
+//            {
+//                col = new QColor (newImage.pixelColor(i, j));
+//                bright = 0.299*col->red() + 0.5876*col->green() + 0.114*col->blue();
+
+//                if (bright > val)       //ярость больше порога?
+//                {
+//                    col->setBlue(255);
+//                    col->setGreen(255);
+//                    col->setRed(255);
+//                }
+//                else
+//                {
+//                    col->setBlue(0);
+//                    col->setGreen(0);
+//                    col->setRed(0);
+//                }
+//                newImage.setPixelColor(i, j, *col);
+//                delete col;
+//            }
+//        //delete col;
+//    }
+//    return new QPixmap (QPixmap::fromImage(newImage));
+}
+
 QImage *Graphic::getImage() const
 {
     return image;
+}
+
+void Graphic::setImage(QImage *value)
+{
+    image = value;
 }
 
 void Graphic::resizeEvent(QResizeEvent *event)

@@ -9,7 +9,7 @@
 #include <graphic.h>
 #include <iterator>
 #include <qmath.h>
-#include <windows.h>
+//#include <windows.h>
 #include <QWidget>
 #include <QGraphicsItem>
 #include <QPixelFormat>

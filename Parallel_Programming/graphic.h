@@ -10,7 +10,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QtMath>
-#include <windows.h>
+//#include <windows.h>
 //#define
 
 
@@ -54,8 +54,13 @@ public:
     bool setYUVMatix ();
     bool setYUV ();
 
+    QColor matrixMul (QColor colors[3][3], int matrix[3][3]);
+    QColor colorNormir (QColor colorX, QColor colorY);
+    bool sobelOperator (QImage image);
+
 
     QImage *getImage() const;
+    void setImage(QImage *value);
 
 public slots:
     //void Drawing ();
