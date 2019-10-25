@@ -54,17 +54,30 @@ public:
     bool setYUVMatix ();
     bool setYUV ();
 
-    QColor matrixMul (QColor colors[3][3], int matrix[3][3]);
+    QColor matrixColorMul (QColor colors[3][3], int matrix[3][3]);
+    unsigned char matrixMul (unsigned char channel[3][3], int matrix[3][3]);
     QColor colorNormir (QColor colorX, QColor colorY);
-    bool sobelOperator (QImage image);
+    unsigned char componentNormir (unsigned char colorX, unsigned char colorY);
+    QImage* sobelOperator ();
+    QImage* sobelOperatorOneChannel (unsigned char *matix);
 
 
     QImage *getImage() const;
     void setImage(QImage *value);
 
+    unsigned char *getY() const;
+
+    unsigned char *getU() const;
+
+    unsigned char *getV() const;
+
+    void setLIMIT(int value);
+
 public slots:
     //void Drawing ();
 private:
+    int LIMIT = 225;
+
     QImage *image;
     unsigned char *Y, *U, *V;
 };

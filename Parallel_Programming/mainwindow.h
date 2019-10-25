@@ -17,6 +17,7 @@
 #include <QRandomGenerator>
 #include <math.h>
 #include <QTimer>
+#include <QTime>
 #include <QSlider>
 #include <QButtonGroup>
 #include <dialog.h>
@@ -55,12 +56,12 @@ public slots:
     void setStart ();
     void buttonChange ();
     void sliderOb ();
-    void Brightness ();
+//    void Brightness ();
     void Binarization ();
-    void Gray ();
-    void Negative ();
-    void Contrast ();
-    void Balance ();
+//    void Gray ();
+//    void Negative ();
+//    void Contrast ();
+//    void Balance ();
 
     void makeHist ();
 
@@ -69,10 +70,10 @@ public slots:
     void setNoise ();
     void Median ();
     void Gauss ();
-    void Rezk();
-    void Aquarel();
+//    void Rezk();
+//    void Aquarel();
 
-    void MyFilter();
+//    void MyFilter();
 
     bool setYUVMatix ();
     bool setYUV ();
@@ -85,6 +86,14 @@ public slots:
 
 private slots:
     void on_pushButton_clicked();
+
+    void on_ButtonAquarel_clicked();
+
+    void on_ButtonMy_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_horizontalSlider_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

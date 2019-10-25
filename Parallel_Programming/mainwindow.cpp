@@ -21,33 +21,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->horizontalLayout->addWidget(myGraphic);
     ui->horizontalLayout->addWidget(myGraphic2);
     ui->verticalLayout_4->addWidget(histogram);
-    buttGr = new QButtonGroup ();
-    buttGr->addButton(ui->radioButton, 0);
-    buttGr->addButton(ui->radioButton_2, 1);
-    buttGr->addButton(ui->radioButton_3, 2);
-    buttGr->addButton(ui->radioButton_4, 3);
-    buttGr->addButton(ui->radioButton_5, 4);
-    buttNum = 0;
+
     random = new QRandomGenerator ();
 
    connect(ui->open, SIGNAL(triggered(bool)), this, SLOT(getFile()));
-   connect(ui->ButtonNeg, SIGNAL(clicked()), this, SLOT(Negative ()));
-   connect(ui->ButtonGray, SIGNAL(clicked()), this, SLOT(Gray ()));
-   connect(ui->ButtonBinary, SIGNAL(clicked()), this, SLOT(Binarization ()));
    connect(ui->ButtonRepair, SIGNAL(clicked()), this, SLOT(Repair ()));
-   //connect(ui->ButtonHistBr, SIGNAL(clicked()), this, SLOT(makeHist ()));
-   connect(ui->horizontalSlider, SIGNAL(sliderReleased()), this, SLOT(sliderOb())); //valueChanged(int)
-   connect(this->buttGr, SIGNAL(buttonClicked(int)), this, SLOT(buttonChange ()));
+   connect(ui->horizontalSlider, SIGNAL(sliderReleased()), this, SLOT(sliderOb()));
    connect(ui->ButtonNoise, SIGNAL(clicked()), this, SLOT(setNoise ()));
-   connect(ui->ButtonMedian, SIGNAL(clicked()), this, SLOT(Median ()));
+//   connect(ui->ButtonMedian, SIGNAL(clicked()), this, SLOT(Median ()));
    connect(ui->ButtonGauss, SIGNAL(clicked()), this, SLOT(Gauss ()));
-   connect(ui->ButtonRezk, SIGNAL(clicked()), this, SLOT(Rezk ()));
-   connect(ui->ButtonAquarel, SIGNAL(clicked()), this, SLOT(Aquarel ()));
-   connect(ui->ButtonMy, SIGNAL(clicked()), this, SLOT(MyFilter ()));
+
 //    ui->verticalLayout->addWidget(myGraphic);
 //    ui->verticalLayout_4->addWidget(myGraphic2);
 
     //myGraphic->Drawing();
+   ui->ButtonRezk->hide();
+   ui->ButtonGauss->hide();
+   ui->ButtonNoise->hide();
+   image = new QImage ();
 }
 
 
@@ -103,65 +94,6 @@ void MainWindow::Repair ()      //восстановление
     makeHist ();
 }
 
-void MainWindow::Negative ()
-{
-    if (myGraphic2->imageItem != Q_NULLPTR)
-    {
-        if (myGraphic2->imageItem != Q_NULLPTR)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->getNegative());
-        if (myGraphic2->reserve  != Q_NULLPTR)
-            delete myGraphic2->reserve;
-        myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
-    }
-}
-
-void MainWindow::Gray ()
-{
-    if (myGraphic2->imageItem  != Q_NULLPTR)
-    {
-        if (myGraphic2->imageItem)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->getGray());
-        if (myGraphic2->reserve != nullptr)
-            delete myGraphic2->reserve;
-        myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
-    }
-}
-
-void MainWindow::Brightness()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        int brPl = ui->horizontalSlider->value();
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Brightness(brPl));
-    }
-}
-
-void MainWindow::Contrast()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        int brPl = ui->horizontalSlider->value();
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Brightness(brPl));
-    }
-}
-void MainWindow::Balance()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        int brPl = ui->horizontalSlider->value();
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Brightness(brPl));
-    }
-}
 
 void MainWindow::setStart ()
 {
@@ -363,31 +295,6 @@ void MainWindow::Gauss()
     }
 }
 
-void MainWindow::Rezk()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Rezk());
-        delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
-        myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
-    }
-}
-
-void MainWindow::MyFilter()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->MyFilter(ui->horizontalSlider->value()));
-        delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
-        myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
-    }
-}
 
 bool MainWindow::setYUVMatix()
 {
@@ -420,75 +327,7 @@ bool MainWindow::setYUVMatix()
          Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
          U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
          V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
-
-//         image->setPixelColor(i, j, QColor (Y[i * width + j], U[i * width + j], V[i * width + j]));
        }
-//    for(unsigned y = 0; y < height; y++)
-//    {
-
-//       unsigned char *s = (unsigned char*)image->scanLine(y);
-//       unsigned char *d = &Y[y * width];//(unsigned char*)&picture_buf[y * width];
-//       //printf("Line %d. d: %p. picture_buf: %p\n",y,d,picture_buf);
-
-//       for(unsigned int x = 0; x < width; x++)
-//       {
-//          unsigned int r = s[2];
-//          unsigned int g = s[1];
-//          unsigned int b = s[0];
-
-//          unsigned char yLocal = (r*2104 + g*4130 + b*802 + 4096 + 131072) >> 13;
-//          if(yLocal>235) yLocal = 235;
-
-//          *d = yLocal;
-
-//          d+=1;
-//          s+=4;
-//       }
-//    }
-
-//    // U,V
-//    U = new unsigned char [size];
-//    V = new unsigned char [size];
-//    for(unsigned y = 0; y < height; y++)//+= 2)
-//    {
-//       unsigned char *s = (unsigned char*)image->scanLine(y);
-//       unsigned int ss = image->bytesPerLine();
-//       unsigned char *d = (unsigned char*)&picture_buf[size+y/2*getWidth()/2];
-
-//       //printf("Line %d. d: %p. picture_buf: %p\n",y,d,picture_buf);
-
-//       for(unsigned x = 0; x < width; x++)//+=2)
-//       {
-//          // Cr = 128 + 1/256 * ( 112.439 * R'd -  94.154 * G'd -  18.285 * B'd)
-//          // Cb = 128 + 1/256 * (- 37.945 * R'd -  74.494 * G'd + 112.439 * B'd)
-
-//          // Get the average RGB in a 2x2 block
-//          int r=(s[2] + s[6] + s[ss+2] + s[ss+6] + 2) >> 2;
-//          int g=(s[1] + s[5] + s[ss+1] + s[ss+5] + 2) >> 2;
-//          int b=(s[0] + s[4] + s[ss+0] + s[ss+4] + 2) >> 2;
-
-//          int Cb = (-1214*r - 2384*g + 3598*b + 4096 + 1048576)>>13;
-//          if(Cb<16)
-//             Cb=16;
-//          if(Cb>240)
-//             Cb=240;
-
-//          int Cr = (3598*r - 3013*g - 585*b + 4096 + 1048576)>>13;
-//          if(Cr<16)
-//             Cr=16;
-//          if(Cr>240)
-//             Cr=240;
-
-
-//          U[y * width + x] = Cb;
-//          V[y * width + x] = Cr;
-////          *d = Cb;
-////          *(d+size/4) = Cr;
-
-////          d+=1;
-////          s+=8;
-//       }
-//    }
     return true;
 }
 
@@ -496,7 +335,8 @@ bool MainWindow::setYUV()
 {
     if (image != nullptr)
     {
-        image = new QImage (*image);
+//        delete
+//        image = new QImage (*image);
         //newImage.invertPixels();
         QColor* col = new QColor ();
         int w = image->width();
@@ -517,32 +357,65 @@ bool MainWindow::setYUV()
     return true;//return new QPixmap (QPixmap::fromImage(newImage));
 }
 
-void MainWindow::Aquarel()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        //myGraphic2->SIGMA = 5;
-        myGraphic2->reserve = myGraphic2->myScene->addPixmap(*myGraphic2->Median());   //размываем
-        myGraphic2->reserve = myGraphic2->myScene->addPixmap(*myGraphic2->Median());   //размываем
-        myGraphic2->reserve = myGraphic2->myScene->addPixmap(*myGraphic2->Median());   //размываем
-        //myGraphic2->reserve = myGraphic2->myScene->addPixmap(*myGraphic2->Gauss());   //размываем
-
-    myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Rezk());   //размываем
-    delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
-    myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
-    }
-}
-
 
 void MainWindow::on_pushButton_clicked()
 {
-    image = myGraphic->getImage();
-    setYUVMatix();
-    setYUV();
+//    delete image;
+    myGraphic2->setImage(myGraphic->getImage());
+//    image = myGraphic->getImage();
+
+    QTime timer = QTime::currentTime();
+
+    myGraphic2->setYUVMatix();
+    myGraphic2->setYUV();
+
+    delete image;
+    image = myGraphic2->sobelOperator();
+
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+    ui->labelLine->setText("Линейный алгоритм: " + QString::number(QTime::currentTime().msec() - timer.msec()));
     //myGraphic2->ClearItem(myGraphic2->imageItem);
+}
+
+void MainWindow::on_ButtonAquarel_clicked()
+{
+    myGraphic2->setImage(myGraphic->getImage());
+//    image = myGraphic->getImage();
+    myGraphic2->setYUVMatix();
+    //myGraphic2->setYUV();
+
+    delete image;
+    image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getY());
+    delete myGraphic2->imageItem;
+    myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+}
+
+void MainWindow::on_ButtonMy_clicked()
+{
+    myGraphic2->setImage(myGraphic->getImage());
+//    image = myGraphic->getImage();
+    myGraphic2->setYUVMatix();
+    //myGraphic2->setYUV();
+
+    delete image;
+    image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getU());
+    delete myGraphic2->imageItem;
+    myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    myGraphic2->setImage(myGraphic->getImage());
+    myGraphic2->setYUVMatix();
+
+    delete image;
+    image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getV());
+    delete myGraphic2->imageItem;
+    myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+}
+
+void MainWindow::on_horizontalSlider_valueChanged(int value)
+{
+    myGraphic2->setLIMIT(ui->horizontalSlider->value());
 }
