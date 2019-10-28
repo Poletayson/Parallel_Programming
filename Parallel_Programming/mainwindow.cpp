@@ -151,17 +151,17 @@ void MainWindow::buttonChange ()            //произошло нажатие 
     }
 }
 
-void MainWindow::Binarization ()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        int brPl = ui->horizontalSlider->value();
-        if (myGraphic2->imageItem != nullptr)
-            delete myGraphic2->imageItem;
-        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Binarization(brPl));
-        makeHist ();
-    }
-}
+//void MainWindow::Binarization ()
+//{
+//    if (myGraphic2->reserve != nullptr)
+//    {
+//        int brPl = ui->horizontalSlider->value();
+//        if (myGraphic2->imageItem != nullptr)
+//            delete myGraphic2->imageItem;
+//        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Binarization(brPl));
+//        makeHist ();
+//    }
+//}
 
 
 
@@ -358,7 +358,7 @@ bool MainWindow::setYUV()
 }
 
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_pushButtonYUV_clicked()
 {
 //    delete image;
     myGraphic2->setImage(myGraphic->getImage());
@@ -369,8 +369,12 @@ void MainWindow::on_pushButton_clicked()
     myGraphic2->setYUVMatix();
     myGraphic2->setYUV();
 
-    delete image;
+
+
     image = myGraphic2->sobelOperator();
+    myGraphic2->Binarization();
+    //delete image;
+    image = myGraphic2->getImage();
 
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
@@ -385,7 +389,7 @@ void MainWindow::on_ButtonAquarel_clicked()
     myGraphic2->setYUVMatix();
     //myGraphic2->setYUV();
 
-    delete image;
+    //delete image;
     image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getY());
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
@@ -398,7 +402,7 @@ void MainWindow::on_ButtonMy_clicked()
     myGraphic2->setYUVMatix();
     //myGraphic2->setYUV();
 
-    delete image;
+    //delete image;
     image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getU());
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
@@ -409,7 +413,7 @@ void MainWindow::on_pushButton_2_clicked()
     myGraphic2->setImage(myGraphic->getImage());
     myGraphic2->setYUVMatix();
 
-    delete image;
+    //delete image;
     image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getV());
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));

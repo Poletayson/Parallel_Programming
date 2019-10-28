@@ -160,38 +160,32 @@ QPixmap* Graphic::Contrast (float val)      //контраст
     return retpix;
 }
 
-QPixmap* Graphic::Binarization(int val)       //яркость
+void Graphic::Binarization()       //яркость
 {
-    QImage newImage;
-    if (reserve != nullptr)
-    {
-        newImage = *new QImage (reserve->pixmap().toImage());
-        QColor* col;
-        qreal bright;           //яркость
-        for (int i = 0; i < newImage.width(); i++)
-            for (int j = 0; j < newImage.height(); j++)
+        QColor col;
+        int bright;           //яркость
+        int w = image->width();
+        int h = image->height();
+        for (int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++)
             {
-                col = new QColor (newImage.pixelColor(i, j));
-                bright = 0.299*col->red() + 0.5876*col->green() + 0.114*col->blue();
+                col = image->pixelColor(i, j);
+                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
 
-                if (bright > val)       //ярость больше порога?
+                if (bright > LIMIT)       //ярость больше порога?
                 {
-                    col->setBlue(255);
-                    col->setGreen(255);
-                    col->setRed(255);
+                    col.setBlue(255);
+                    col.setGreen(255);
+                    col.setRed(255);
                 }
                 else
                 {
-                    col->setBlue(0);
-                    col->setGreen(0);
-                    col->setRed(0);
+                    col.setBlue(0);
+                    col.setGreen(0);
+                    col.setRed(0);
                 }
-                newImage.setPixelColor(i, j, *col);
-                delete col;
+                image->setPixelColor(i, j, col);
             }
-        //delete col;
-    }
-    return new QPixmap (QPixmap::fromImage(newImage));
 }
 
 
@@ -631,10 +625,10 @@ QImage* Graphic::sobelOperator()
     int h = image->height();
 //    float r,g,b;
     int kx, ky;     //обозначают границы
-    for (int i = 0; i < w; i++) {
+    for (int i = 1; i < w-1; i++) {
         kx = -1;
         ky = -1;
-        for (int j = 0; j < h; j++) {
+        for (int j = 1; j < h-1; j++) {
             col[0][0] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
             col[0][1] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
             col[0][2] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));

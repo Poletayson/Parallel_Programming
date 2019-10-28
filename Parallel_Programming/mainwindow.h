@@ -57,7 +57,7 @@ public slots:
     void buttonChange ();
     void sliderOb ();
 //    void Brightness ();
-    void Binarization ();
+//    void Binarization ();
 //    void Gray ();
 //    void Negative ();
 //    void Contrast ();
@@ -85,7 +85,7 @@ public slots:
 
 
 private slots:
-    void on_pushButton_clicked();
+    void on_pushButtonYUV_clicked();
 
     void on_ButtonAquarel_clicked();
 

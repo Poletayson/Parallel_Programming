@@ -43,7 +43,7 @@ public:
     //QPixmap* getNegative ();
     QPixmap* Brightness(int val);
     QPixmap* Contrast (float val);
-    QPixmap* Binarization (int val);
+    void Binarization ();
     QPixmap* Median ();     //медианный фильтр и Гауссовский
     QPixmap* Gauss ();
     QPixmap* Rezk ();     //медианный фильтр и Гауссовский
