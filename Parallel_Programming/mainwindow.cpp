@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
    connect(ui->open, SIGNAL(triggered(bool)), this, SLOT(getFile()));
    connect(ui->ButtonRepair, SIGNAL(clicked()), this, SLOT(Repair ()));
-   connect(ui->horizontalSlider, SIGNAL(sliderReleased()), this, SLOT(sliderOb()));
+//   connect(ui->horizontalSlider, SIGNAL(sliderReleased()), this, SLOT(sliderOb()));
    connect(ui->ButtonNoise, SIGNAL(clicked()), this, SLOT(setNoise ()));
 //   connect(ui->ButtonMedian, SIGNAL(clicked()), this, SLOT(Median ()));
    connect(ui->ButtonGauss, SIGNAL(clicked()), this, SLOT(Gauss ()));
@@ -107,49 +107,6 @@ void MainWindow::setStart ()
     makeHist ();
 }
 
-void MainWindow::buttonChange ()            //произошло нажатие на радиокнопку
-{
-    buttNum = buttGr->checkedId();
-    delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
-    myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());//myGraphic2->myScene->addPixmap(myGraphic->image->pixmap());//  new QPixmap (myGraphic2->image->pixmap());
-    switch (buttNum) {
-        case 0:
-        {
-            ui->horizontalSlider->setMinimum(-255);     //устанавливаем минимум и максимум
-            ui->horizontalSlider->setMaximum(255);
-            ui->horizontalSlider->setValue(0);
-            break;
-        }
-        case 1:
-        {
-            ui->horizontalSlider->setMinimum(0);     //устанавливаем минимум и максимум
-            ui->horizontalSlider->setMaximum(200);
-            ui->horizontalSlider->setValue(50.0);
-            break;
-        }
-        case 2:
-        {
-            ui->horizontalSlider->setMinimum(0);     //устанавливаем минимум и максимум
-            ui->horizontalSlider->setMaximum(255);
-            ui->horizontalSlider->setValue(127);
-            break;
-        }
-        case 3:
-        {
-            ui->horizontalSlider->setMinimum(0);     //устанавливаем минимум и максимум
-            ui->horizontalSlider->setMaximum(5);
-            ui->horizontalSlider->setValue(3);
-            break;
-        }
-        case 4:
-        {
-            ui->horizontalSlider->setMinimum(1);     //устанавливаем минимум и максимум
-            ui->horizontalSlider->setMaximum(10);
-            ui->horizontalSlider->setValue(2);
-            break;
-        }
-    }
-}
 
 //void MainWindow::Binarization ()
 //{
@@ -164,34 +121,6 @@ void MainWindow::buttonChange ()            //произошло нажатие 
 //}
 
 
-
-
-void MainWindow::sliderOb ()
-{
-    if (myGraphic2->reserve != nullptr)
-    {
-        int brPl = ui->horizontalSlider->value();
-        switch (buttNum)
-        {
-            case 0:
-            {
-                if (myGraphic2->imageItem != nullptr)
-                    delete myGraphic2->imageItem;
-                myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Brightness(brPl));      //яркость
-                makeHist ();
-                break;
-            }
-            case 1:
-            {
-                if (myGraphic2->imageItem != nullptr)
-                    delete myGraphic2->imageItem;
-                myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Contrast((float)brPl/50.0)); //контраст
-                makeHist ();
-                break;
-            }
-        }
-    }
-}
 
 void MainWindow::makeHist ()
 {
@@ -218,13 +147,6 @@ void MainWindow::makeHist ()
         if (brigtLevels[i] > max)
             max = brigtLevels[i];
     }
-    //int sch = histogram->scene()->height();
-//    try {
-//        //delete histogram->myScene;
-//    } catch (std::exception& ex)
-//    {
-//        //ex.
-//    }
 
     //histogram->myScene = new QGraphicsScene ();
     histogram->myScene->setSceneRect(0, 0, 256, histogram->height() - 3);   //размер сцены под картинку
@@ -358,29 +280,7 @@ bool MainWindow::setYUV()
 }
 
 
-void MainWindow::on_pushButtonYUV_clicked()
-{
-//    delete image;
-    myGraphic2->setImage(myGraphic->getImage());
-//    image = myGraphic->getImage();
 
-    QTime timer = QTime::currentTime();
-
-    myGraphic2->setYUVMatix();
-    myGraphic2->setYUV();
-
-
-
-    image = myGraphic2->sobelOperator();
-    myGraphic2->Binarization();
-    //delete image;
-    image = myGraphic2->getImage();
-
-    delete myGraphic2->imageItem;
-    myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
-    ui->labelLine->setText("Линейный алгоритм: " + QString::number(QTime::currentTime().msec() - timer.msec()));
-    //myGraphic2->ClearItem(myGraphic2->imageItem);
-}
 
 void MainWindow::on_ButtonAquarel_clicked()
 {
@@ -400,9 +300,7 @@ void MainWindow::on_ButtonMy_clicked()
     myGraphic2->setImage(myGraphic->getImage());
 //    image = myGraphic->getImage();
     myGraphic2->setYUVMatix();
-    //myGraphic2->setYUV();
 
-    //delete image;
     image = myGraphic2->sobelOperatorOneChannel(myGraphic2->getU());
     delete myGraphic2->imageItem;
     myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
@@ -421,5 +319,27 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::on_horizontalSlider_valueChanged(int value)
 {
-    myGraphic2->setLIMIT(ui->horizontalSlider->value());
+    myGraphic2->setLIMIT(value);
 }
+
+
+
+void MainWindow::on_pushButtonYUV_clicked()
+{
+        myGraphic2->setImage(myGraphic->getImage());
+
+        QDateTime start = QDateTime::currentDateTime();
+
+        delete image;
+        image = myGraphic2->outlineSelectionLinear();//sobelOperator();
+
+        QDateTime finish = QDateTime::currentDateTime();
+
+
+        delete myGraphic2->imageItem;
+        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+        qint64 secs = start.msecsTo(finish);
+        ui->labelLine->setText("Линейный алгоритм: " + QString::number(secs));
+        //myGraphic2->ClearItem(myGraphic2->imageItem);
+}
+

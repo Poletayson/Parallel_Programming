@@ -59,6 +59,8 @@ public:
     QColor colorNormir (QColor colorX, QColor colorY);
     unsigned char componentNormir (unsigned char colorX, unsigned char colorY);
     QImage* sobelOperator ();
+    QImage* outlineSelectionLinear ();
+    QImage* outlineSelectionParallel ();
     QImage* sobelOperatorOneChannel (unsigned char *matix);
 
 

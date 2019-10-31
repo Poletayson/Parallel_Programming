@@ -658,6 +658,13 @@ QImage* Graphic::sobelOperator()
     return image;
 }
 
+QImage *Graphic::outlineSelectionLinear()
+{
+    setYUVMatix();
+    setYUV();
+    return sobelOperator();
+}
+
 QImage* Graphic::sobelOperatorOneChannel(unsigned char *matrix)
 {
     int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};

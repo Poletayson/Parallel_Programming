@@ -18,6 +18,7 @@
 #include <math.h>
 #include <QTimer>
 #include <QTime>
+#include <QDateTime>
 #include <QSlider>
 #include <QButtonGroup>
 #include <dialog.h>
