@@ -55,17 +55,10 @@ public:
 
 public slots:
     void setStart ();
-    void buttonChange ();
-    void sliderOb ();
-//    void Brightness ();
+
 //    void Binarization ();
-//    void Gray ();
-//    void Negative ();
-//    void Contrast ();
-//    void Balance ();
 
     void makeHist ();
-
     void Repair ();
 
     void setNoise ();
@@ -86,7 +79,6 @@ public slots:
 
 
 private slots:
-    void on_pushButtonYUV_clicked();
 
     void on_ButtonAquarel_clicked();
 
@@ -95,6 +87,9 @@ private slots:
     void on_pushButton_2_clicked();
 
     void on_horizontalSlider_valueChanged(int value);
+
+
+    void on_pushButtonYUV_clicked();
 
 private:
     Ui::MainWindow *ui;

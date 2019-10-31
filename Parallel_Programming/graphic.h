@@ -10,6 +10,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QtMath>
+#include <QRect>
 //#include <windows.h>
 //#define
 
@@ -60,7 +61,7 @@ public:
     unsigned char componentNormir (unsigned char colorX, unsigned char colorY);
     QImage* sobelOperator ();
     QImage* outlineSelectionLinear ();
-    QImage* outlineSelectionParallel ();
+    QImage* outlineSelectionParallel (int threadCount);
     QImage* sobelOperatorOneChannel (unsigned char *matix);
 
 

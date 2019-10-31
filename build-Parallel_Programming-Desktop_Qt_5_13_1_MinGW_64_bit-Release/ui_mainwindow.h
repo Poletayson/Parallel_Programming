@@ -41,7 +41,7 @@ public:
     QPushButton *ButtonGauss;
     QPushButton *ButtonRezk;
     QVBoxLayout *verticalLayout_8;
-    QPushButton *pushButton;
+    QPushButton *pushButtonYUV;
     QPushButton *ButtonAquarel;
     QPushButton *ButtonMy;
     QPushButton *pushButton_2;
@@ -108,10 +108,10 @@ public:
         verticalLayout_8 = new QVBoxLayout();
         verticalLayout_8->setSpacing(6);
         verticalLayout_8->setObjectName(QString::fromUtf8("verticalLayout_8"));
-        pushButton = new QPushButton(centralWidget);
-        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButtonYUV = new QPushButton(centralWidget);
+        pushButtonYUV->setObjectName(QString::fromUtf8("pushButtonYUV"));
 
-        verticalLayout_8->addWidget(pushButton);
+        verticalLayout_8->addWidget(pushButtonYUV);
 
         ButtonAquarel = new QPushButton(centralWidget);
         ButtonAquarel->setObjectName(QString::fromUtf8("ButtonAquarel"));
@@ -144,7 +144,7 @@ public:
         horizontalSlider->setMouseTracking(true);
         horizontalSlider->setMinimum(0);
         horizontalSlider->setMaximum(255);
-        horizontalSlider->setValue(1);
+        horizontalSlider->setValue(127);
         horizontalSlider->setOrientation(Qt::Horizontal);
 
         verticalLayout_7->addWidget(horizontalSlider);
@@ -182,7 +182,7 @@ public:
         MainWindow->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(MainWindow);
         menuBar->setObjectName(QString::fromUtf8("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 698, 22));
+        menuBar->setGeometry(QRect(0, 0, 698, 20));
         menu = new QMenu(menuBar);
         menu->setObjectName(QString::fromUtf8("menu"));
         MainWindow->setMenuBar(menuBar);
@@ -197,6 +197,7 @@ public:
         menu->addAction(open);
 
         retranslateUi(MainWindow);
+        QObject::connect(pushButtonYUV, SIGNAL(clicked()), MainWindow, SLOT(on_pushButtonYUV_clicked()));
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
@@ -210,7 +211,7 @@ public:
         ButtonNoise->setText(QCoreApplication::translate("MainWindow", "\320\250\321\203\320\274", nullptr));
         ButtonGauss->setText(QCoreApplication::translate("MainWindow", "\320\244. \320\223\320\260\321\203\321\201\321\201\320\260", nullptr));
         ButtonRezk->setText(QCoreApplication::translate("MainWindow", "\320\237\320\276\320\262\321\213\321\210. \321\200\320\265\320\267\320\272\320\276\321\201\321\202\320\270", nullptr));
-        pushButton->setText(QCoreApplication::translate("MainWindow", "YUV", nullptr));
+        pushButtonYUV->setText(QCoreApplication::translate("MainWindow", "YUV", nullptr));
         ButtonAquarel->setText(QCoreApplication::translate("MainWindow", "Y", nullptr));
         ButtonMy->setText(QCoreApplication::translate("MainWindow", "U", nullptr));
         pushButton_2->setText(QCoreApplication::translate("MainWindow", "V", nullptr));

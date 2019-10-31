@@ -662,7 +662,20 @@ QImage *Graphic::outlineSelectionLinear()
 {
     setYUVMatix();
     setYUV();
-    return sobelOperator();
+    sobelOperator();
+    Binarization();
+    return image;
+}
+
+QImage *Graphic::outlineSelectionParallel(int threadCount)
+{
+    QList <QRect> rects;
+    int lineW = image->width()/threadCount; //ширина одной полоски изображения
+    int lineH = image->height();
+    int x = 0;
+    for (int i = 0; i < threadCount; i++){
+        rects.append(QRect(x, 0, x + lineW, lineH));
+    }
 }
 
 QImage* Graphic::sobelOperatorOneChannel(unsigned char *matrix)
