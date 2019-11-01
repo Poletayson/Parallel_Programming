@@ -11,6 +11,7 @@
 #include <QPainter>
 #include <QtMath>
 #include <QRect>
+#include <threadgraphic.h>
 //#include <windows.h>
 //#define
 

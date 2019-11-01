@@ -670,12 +670,34 @@ QImage *Graphic::outlineSelectionLinear()
 QImage *Graphic::outlineSelectionParallel(int threadCount)
 {
     QList <QRect> rects;
+    QList <ThreadGraphic> threads;
     int lineW = image->width()/threadCount; //ширина одной полоски изображения
     int lineH = image->height();
+    Y = new unsigned char [image->width() * image->height()];
+    U = new unsigned char [image->width() * image->height()];
+    V = new unsigned char [image->width() * image->height()];
+
     int x = 0;
     for (int i = 0; i < threadCount; i++){
-        rects.append(QRect(x, 0, x + lineW, lineH));
+        rects.append(QRect(x, 0, i == threadCount - 1 ? image->width() :  x + lineW, lineH));
+        threads.append(ThreadGraphic());
+        threads[threads.count() - 1].setRect(rects[rects.count() - 1]);
+        threads[threads.count() - 1].setYUVPointers(Y, U, V);
+        threads[threads.count() - 1].setImagePointer(image);
     }
+    for (int i = 0; i < threadCount; i++){
+        threads[i].run();
+    }
+    while (threadCount > 0){        //пока все потоки не завершат работу
+        for (int i = 0; i < threads.count(); i++){  //раз за разом обходим наши потоки
+            if (threads[i].isFinished()){
+                threadCount--;
+                threads.removeAt(i);
+                i--;
+            }
+        }
+    }
+    return image;
 }
 
 QImage* Graphic::sobelOperatorOneChannel(unsigned char *matrix)

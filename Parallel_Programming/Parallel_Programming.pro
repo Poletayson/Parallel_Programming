@@ -26,12 +26,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     graphic.cpp \
-    dialog.cpp
+    dialog.cpp \
+    threadgraphic.cpp
 
 HEADERS += \
         mainwindow.h \
     graphic.h \
-    dialog.h
+    dialog.h \
+    threadgraphic.h
 
 
 FORMS += \
