@@ -12,15 +12,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     myGraphic = new Graphic ();
     myGraphic2 = new Graphic ();
-    histogram = new Graphic ();
-    histogram->setAlignment(Qt::AlignCenter);        //выравнивание по центру
-    histogram->setMaximumWidth(260);
-    histogram->setMaximumHeight(150);
-    //histogram->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    //histogram->setsi
+//    histogram = new Graphic ();
+//    histogram->setAlignment(Qt::AlignCenter);        //выравнивание по центру
+//    histogram->setMaximumWidth(260);
+//    histogram->setMaximumHeight(150);
+
+
     ui->horizontalLayout->addWidget(myGraphic);
     ui->horizontalLayout->addWidget(myGraphic2);
-    ui->verticalLayout_4->addWidget(histogram);
+//    ui->verticalLayout_4->addWidget(histogram);
 
     random = new QRandomGenerator ();
 
@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //   connect(ui->ButtonMedian, SIGNAL(clicked()), this, SLOT(Median ()));
    connect(ui->ButtonGauss, SIGNAL(clicked()), this, SLOT(Gauss ()));
 
+   myGraphic2->setLIMIT(ui->horizontalSlider->value());
 //    ui->verticalLayout->addWidget(myGraphic);
 //    ui->verticalLayout_4->addWidget(myGraphic2);
 
@@ -38,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
    ui->ButtonRezk->hide();
    ui->ButtonGauss->hide();
    ui->ButtonNoise->hide();
+   ui->ButtonRepair->hide();
    image = new QImage ();
 }
 
@@ -91,7 +93,7 @@ void MainWindow::Repair ()      //восстановление
     if (myGraphic2->reserve != Q_NULLPTR)
         delete myGraphic2->reserve;
     myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic->imageItem->pixmap());
-    makeHist ();
+//    makeHist ();
 }
 
 
@@ -104,7 +106,7 @@ void MainWindow::setStart ()
     if (myGraphic2->reserve != nullptr)
         delete myGraphic2->reserve;
     myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-    makeHist ();
+//    makeHist ();
 }
 
 
@@ -122,40 +124,40 @@ void MainWindow::setStart ()
 
 
 
-void MainWindow::makeHist ()
-{
-    int brigtLevels [256];
-    for (int i = 0; i < 256; i++) {
-        brigtLevels [i] = 0;
-    }
-    QColor* col;
-    qreal bright;           //яркость
-    QImage *newImage = new QImage (myGraphic2->imageItem->pixmap().toImage());
-    for (int i = 0; i < myGraphic2->imageItem->pixmap().width(); i++)
-        for (int j = 0; j < myGraphic2->imageItem->pixmap().height(); j++)
-        {
-            col = new QColor (newImage->pixelColor(i, j));
-            bright = 0.289*col->red() + 0.5556*col->green() + 0.112*col->blue();    //яркость
-            brigtLevels[(int)bright]++;     //добавляем к яркости
-            delete col;
-        }
-    delete newImage;
-//получили массив яркостей
-    QPen p (Qt::black);
-    int max = brigtLevels[0];
-    for (int i = 0; i < 256; i++) {
-        if (brigtLevels[i] > max)
-            max = brigtLevels[i];
-    }
+//void MainWindow::makeHist ()
+//{
+//    int brigtLevels [256];
+//    for (int i = 0; i < 256; i++) {
+//        brigtLevels [i] = 0;
+//    }
+//    QColor* col;
+//    qreal bright;           //яркость
+//    QImage *newImage = new QImage (myGraphic2->imageItem->pixmap().toImage());
+//    for (int i = 0; i < myGraphic2->imageItem->pixmap().width(); i++)
+//        for (int j = 0; j < myGraphic2->imageItem->pixmap().height(); j++)
+//        {
+//            col = new QColor (newImage->pixelColor(i, j));
+//            bright = 0.289*col->red() + 0.5556*col->green() + 0.112*col->blue();    //яркость
+//            brigtLevels[(int)bright]++;     //добавляем к яркости
+//            delete col;
+//        }
+//    delete newImage;
+////получили массив яркостей
+//    QPen p (Qt::black);
+//    int max = brigtLevels[0];
+//    for (int i = 0; i < 256; i++) {
+//        if (brigtLevels[i] > max)
+//            max = brigtLevels[i];
+//    }
 
-    //histogram->myScene = new QGraphicsScene ();
-    histogram->myScene->setSceneRect(0, 0, 256, histogram->height() - 3);   //размер сцены под картинку
-    histogram->myScene->clear();
-    qreal m = histogram->myScene->height()/max;
-    for (int i = 0; i < 256; i++) {
-        histogram->scene()->addLine(i, histogram->height() - m*brigtLevels[i], i, histogram->height(), p);
-    }
-}
+//    //histogram->myScene = new QGraphicsScene ();
+//    histogram->myScene->setSceneRect(0, 0, 256, histogram->height() - 3);   //размер сцены под картинку
+//    histogram->myScene->clear();
+//    qreal m = histogram->myScene->height()/max;
+//    for (int i = 0; i < 256; i++) {
+//        histogram->scene()->addLine(i, histogram->height() - m*brigtLevels[i], i, histogram->height(), p);
+//    }
+//}
 
 void MainWindow::setNoise ()
 {
@@ -200,7 +202,7 @@ void MainWindow::Median()
         myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Median());
         delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
         myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
+//        makeHist ();
     }
 }
 
@@ -213,7 +215,7 @@ void MainWindow::Gauss()
         myGraphic2->imageItem = myGraphic2->myScene->addPixmap(*myGraphic2->Gauss());
         delete myGraphic->reserve;      //удаляем старый резерв и делаем текущее изображение резервным
         myGraphic2->reserve = new QGraphicsPixmapItem (myGraphic2->imageItem->pixmap());
-        makeHist ();
+//        makeHist ();
     }
 }
 
@@ -329,17 +331,27 @@ void MainWindow::on_pushButtonYUV_clicked()
         myGraphic2->setImage(myGraphic->getImage());
 
         QDateTime start = QDateTime::currentDateTime();
-
         delete image;
         image = myGraphic2->outlineSelectionLinear();//sobelOperator();
-
         QDateTime finish = QDateTime::currentDateTime();
-
 
         delete myGraphic2->imageItem;
         myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
         qint64 secs = start.msecsTo(finish);
         ui->labelLine->setText("Линейный алгоритм: " + QString::number(secs));
-        //myGraphic2->ClearItem(myGraphic2->imageItem);
+
+///
+        myGraphic2->setImage(myGraphic->getImage());
+        QDateTime start2 = QDateTime::currentDateTime();
+        delete image;
+        image = myGraphic2->outlineSelectionParallel(ui->spinBoxThreadCount->value());//sobelOperator();
+
+        QDateTime finish2 = QDateTime::currentDateTime();
+
+//        delete myGraphic2->imageItem;
+//        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+        secs = start2.msecsTo(finish2);
+        ui->labelParell->setText("Параллельный алгоритм: " + QString::number(secs));
+
 }
 

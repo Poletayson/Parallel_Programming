@@ -12,9 +12,10 @@
 #include <QtMath>
 #include <QRect>
 #include <threadgraphic.h>
-//#include <windows.h>
-//#define
+#include <QDebug>
+#include <QPainter>
 
+#include <omp.h>
 
 class Graphic : public QGraphicsView
 {

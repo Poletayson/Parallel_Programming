@@ -18,6 +18,7 @@ class ThreadGraphic : public QThread
     Q_OBJECT
 public:
     explicit ThreadGraphic(QObject *parent = nullptr);
+    ~ThreadGraphic() override;
 
     void setImagePointer(QImage *value);
 
@@ -27,6 +28,10 @@ public:
 
 
     void run() override;
+    void setLIMIT(int value);
+
+    QImage *getImagePart() const;
+
 signals:
 
 public slots:
@@ -35,7 +40,9 @@ private:
     int LIMIT = 225;
     int w;
 
+    QImage *imagePart;
     QImage *image;
+    QImage *imageReserv;
     unsigned char *Y, *U, *V;
     QRect rect;     //прямоугольник, который будет обрабатываться потоком
 
@@ -48,6 +55,11 @@ private:
     bool setYUV ();
     void sobelOperator();
     void binarization ();
+
+    bool setYUVMatixPart();
+    bool setYUVPart();
+    void sobelOperatorPart();
+    void binarizationPart();
 };
 
 #endif // THREADGRAPHIC_H

@@ -6,6 +6,10 @@
 
 QT       += core gui widgets
 
+QMAKE_LIBS+=-static -lgomp -lpthread
+QMAKE_CXXFLAGS+=-msse3 -fopenmp
+#QMAKE_CXXFLAGS+=-U_WIN32
+
 TARGET = Parallel_Programming
 TEMPLATE = app
 

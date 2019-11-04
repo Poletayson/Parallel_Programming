@@ -617,7 +617,6 @@ QImage* Graphic::sobelOperator()
     int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
     int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
 
-
     QColor col[3][3];
 
     QImage newImage = QImage (*image);
@@ -660,6 +659,7 @@ QImage* Graphic::sobelOperator()
 
 QImage *Graphic::outlineSelectionLinear()
 {
+    qDebug()<<"Зашли в последовательный";
     setYUVMatix();
     setYUV();
     sobelOperator();
@@ -670,33 +670,57 @@ QImage *Graphic::outlineSelectionLinear()
 QImage *Graphic::outlineSelectionParallel(int threadCount)
 {
     QList <QRect> rects;
-    QList <ThreadGraphic> threads;
+    QList <ThreadGraphic*> threads;
     int lineW = image->width()/threadCount; //ширина одной полоски изображения
     int lineH = image->height();
-    Y = new unsigned char [image->width() * image->height()];
-    U = new unsigned char [image->width() * image->height()];
-    V = new unsigned char [image->width() * image->height()];
-
-    int x = 0;
+//    Y = new unsigned char [image->width() * image->height()];
+//    U = new unsigned char [image->width() * image->height()];
+//    V = new unsigned char [image->width() * image->height()];
+    ThreadGraphic *ptr;
+    int x = 1;
     for (int i = 0; i < threadCount; i++){
-        rects.append(QRect(x, 0, i == threadCount - 1 ? image->width() :  x + lineW, lineH));
-        threads.append(ThreadGraphic());
-        threads[threads.count() - 1].setRect(rects[rects.count() - 1]);
-        threads[threads.count() - 1].setYUVPointers(Y, U, V);
-        threads[threads.count() - 1].setImagePointer(image);
+        rects.append(QRect(x - 1, 0, i == threadCount - 1 ? image->width() - x - 1  : lineW + 1, lineH));
+        ptr = new ThreadGraphic();
+        threads.append(ptr);
+        threads[threads.count() - 1]->setImagePointer(image);
+        threads[threads.count() - 1]->setRect(rects[rects.count() - 1]);
+        //threads[threads.count() - 1]->setYUVPointers(Y, U, V);
+        threads[threads.count() - 1]->setLIMIT(LIMIT);
+        x += lineW;
     }
+    qDebug()<<"Зашли в параллельный";
     for (int i = 0; i < threadCount; i++){
-        threads[i].run();
+        threads[i]->run();
     }
-    while (threadCount > 0){        //пока все потоки не завершат работу
+    bool theadFinished = false;
+//     while (threads[0]->isRunning()){qDebug()<<"Running";}
+    while (!theadFinished){        //пока все потоки не завершат работу
+        theadFinished = true;
         for (int i = 0; i < threads.count(); i++){  //раз за разом обходим наши потоки
-            if (threads[i].isFinished()){
-                threadCount--;
-                threads.removeAt(i);
-                i--;
-            }
+            if (threads[i]->isRunning())
+                theadFinished = false;
+//            if (threads[i]->isFinished()){
+//                threadCount--;
+//                threads.removeAt(i);
+//                i--;
+//            }
+//            qDebug()<<threadCount<<" "<<threads.count()<<" "<<i;
         }
+
     }
+
+//здесь будем склеивать
+    QSize ptrSize = image->size();
+    delete image;
+    image = new QImage (ptrSize, QImage::Format_RGB32);
+    QPainter p (image);
+    x = 1;
+    for (int i = 0; i < threadCount; i++){
+        p.drawImage(QRect(x, 0, i == threadCount - 1 ? image->width() - x  : lineW, lineH), threads[i]->getImagePart()->copy(QRect(1, 1, lineW - 1, lineH)));
+        x += lineW;
+        delete threads[i];
+    }
+    threads.clear();
     return image;
 }
 

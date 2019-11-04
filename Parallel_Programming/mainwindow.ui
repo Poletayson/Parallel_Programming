@@ -34,6 +34,23 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="labelOpenMP">
+          <property name="text">
+           <string>TextLabel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBoxThreadCount">
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>50</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="ButtonNoise">
           <property name="enabled">
            <bool>true</bool>
@@ -112,7 +129,7 @@
            <number>255</number>
           </property>
           <property name="value">
-           <number>127</number>
+           <number>64</number>
           </property>
           <property name="orientation">
            <enum>Qt::Horizontal</enum>

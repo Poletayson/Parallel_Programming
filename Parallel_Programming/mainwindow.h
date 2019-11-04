@@ -35,14 +35,8 @@ class MainWindow : public QMainWindow
 public:
     Graphic* myGraphic;
     Graphic* myGraphic2;
-    Graphic* histogram;
+//    Graphic* histogram;
     QTimer *Timer;
-//    ITunable *car;
-
-//    Car* Cars;
-//    Car* CarsForSale;
-    QGraphicsItemGroup *carIt;
-    QGraphicsItem *box;
 
     QTimer *timer;
     QRandomGenerator* random;
@@ -58,7 +52,7 @@ public slots:
 
 //    void Binarization ();
 
-    void makeHist ();
+//    void makeHist ();
     void Repair ();
 
     void setNoise ();
@@ -95,8 +89,8 @@ private:
     Ui::MainWindow *ui;
 
     int m = 10;             //величина сдвига
-    float u = M_PI/20;
-    float scale = 1.2;
+    double u = M_PI/20;
+    double scale = 1.2;
     bool proc = false;
 
     QImage *image;

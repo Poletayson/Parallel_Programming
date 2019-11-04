@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.13.1
+** Created by: Qt User Interface Compiler version 5.13.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -20,6 +20,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSlider>
+#include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QVBoxLayout>
@@ -37,6 +38,8 @@ public:
     QVBoxLayout *verticalLayout_3;
     QLabel *labelLine;
     QLabel *labelParell;
+    QLabel *labelOpenMP;
+    QSpinBox *spinBoxThreadCount;
     QPushButton *ButtonNoise;
     QPushButton *ButtonGauss;
     QPushButton *ButtonRezk;
@@ -85,6 +88,18 @@ public:
         labelParell->setObjectName(QString::fromUtf8("labelParell"));
 
         verticalLayout_3->addWidget(labelParell);
+
+        labelOpenMP = new QLabel(centralWidget);
+        labelOpenMP->setObjectName(QString::fromUtf8("labelOpenMP"));
+
+        verticalLayout_3->addWidget(labelOpenMP);
+
+        spinBoxThreadCount = new QSpinBox(centralWidget);
+        spinBoxThreadCount->setObjectName(QString::fromUtf8("spinBoxThreadCount"));
+        spinBoxThreadCount->setMinimum(1);
+        spinBoxThreadCount->setMaximum(50);
+
+        verticalLayout_3->addWidget(spinBoxThreadCount);
 
         ButtonNoise = new QPushButton(centralWidget);
         ButtonNoise->setObjectName(QString::fromUtf8("ButtonNoise"));
@@ -144,7 +159,7 @@ public:
         horizontalSlider->setMouseTracking(true);
         horizontalSlider->setMinimum(0);
         horizontalSlider->setMaximum(255);
-        horizontalSlider->setValue(127);
+        horizontalSlider->setValue(64);
         horizontalSlider->setOrientation(Qt::Horizontal);
 
         verticalLayout_7->addWidget(horizontalSlider);
@@ -208,6 +223,7 @@ public:
         open->setText(QCoreApplication::translate("MainWindow", "\320\236\321\202\320\272\321\200\321\213\321\202\321\214", nullptr));
         labelLine->setText(QString());
         labelParell->setText(QString());
+        labelOpenMP->setText(QCoreApplication::translate("MainWindow", "TextLabel", nullptr));
         ButtonNoise->setText(QCoreApplication::translate("MainWindow", "\320\250\321\203\320\274", nullptr));
         ButtonGauss->setText(QCoreApplication::translate("MainWindow", "\320\244. \320\223\320\260\321\203\321\201\321\201\320\260", nullptr));
         ButtonRezk->setText(QCoreApplication::translate("MainWindow", "\320\237\320\276\320\262\321\213\321\210. \321\200\320\265\320\267\320\272\320\276\321\201\321\202\320\270", nullptr));
