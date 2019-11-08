@@ -46,7 +46,7 @@ public:
     //QPixmap* getNegative ();
     QPixmap* Brightness(int val);
     QPixmap* Contrast (float val);
-    void Binarization ();
+
     QPixmap* Median ();     //медианный фильтр и Гауссовский
     QPixmap* Gauss ();
     QPixmap* Rezk ();     //медианный фильтр и Гауссовский
@@ -56,14 +56,27 @@ public:
 
     bool setYUVMatix ();
     bool setYUV ();
+    void sobelOperator ();
+    void Binarization ();
+
+    bool setYUVMatixOMP ();
+    bool setYUVOMP ();
+    void sobelOperatorOMP ();
+    void BinarizationOMP ();
+
 
     QColor matrixColorMul (QColor colors[3][3], int matrix[3][3]);
+    QRgb matrixColorMul (QRgb colors[3][3], int matrix[3][3]);
     unsigned char matrixMul (unsigned char channel[3][3], int matrix[3][3]);
     QColor colorNormir (QColor colorX, QColor colorY);
+    QRgb colorNormir (QRgb colorX, QRgb colorY);
     unsigned char componentNormir (unsigned char colorX, unsigned char colorY);
-    QImage* sobelOperator ();
+
+
+
     QImage* outlineSelectionLinear ();
     QImage* outlineSelectionParallel (int threadCount);
+    QImage* outlineSelectionOMP (int threadCount);
     QImage* sobelOperatorOneChannel (unsigned char *matix);
 
 

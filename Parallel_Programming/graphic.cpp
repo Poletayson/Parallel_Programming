@@ -162,30 +162,52 @@ QPixmap* Graphic::Contrast (float val)      //контраст
 
 void Graphic::Binarization()       //яркость
 {
-        QColor col;
-        int bright;           //яркость
-        int w = image->width();
-        int h = image->height();
-        for (int i = 0; i < w; i++)
-            for (int j = 0; j < h; j++)
-            {
-                col = image->pixelColor(i, j);
-                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
+    int w = image->width();
+    int h = image->height();
 
-                if (bright > LIMIT)       //ярость больше порога?
-                {
-                    col.setBlue(255);
-                    col.setGreen(255);
-                    col.setRed(255);
-                }
-                else
-                {
-                    col.setBlue(0);
-                    col.setGreen(0);
-                    col.setRed(0);
-                }
-                image->setPixelColor(i, j, col);
+    QRgb *imageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
+
+    for (int i = 0; i < w; i++)
+        for (int j = 0; j < h; j++)
+        {
+            int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
+
+            if (bright > LIMIT)       //ярость больше порога?
+            {
+                imageBytes[j][i] = qRgb(255, 255, 255);
             }
+            else
+            {
+                imageBytes[j][i] = qRgb(0, 0, 0);
+            }
+        }
+
+//        QColor col;
+//        int bright;           //яркость
+
+//        for (int i = 0; i < w; i++)
+//            for (int j = 0; j < h; j++)
+//            {
+//                col = image->pixelColor(i, j);
+//                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
+
+//                if (bright > LIMIT)       //ярость больше порога?
+//                {
+//                    col.setBlue(255);
+//                    col.setGreen(255);
+//                    col.setRed(255);
+//                }
+//                else
+//                {
+//                    col.setBlue(0);
+//                    col.setGreen(0);
+//                    col.setRed(0);
+//                }
+//                image->setPixelColor(i, j, col);
+//            }
 }
 
 
@@ -539,23 +561,181 @@ bool Graphic::setYUV()
 //        delete
 //        image = new QImage (*image);
         //newImage.invertPixels();
-        QColor* col = new QColor ();
+//        QColor* col = new QColor ();
         int w = image->width();
         int h = image->height();
+
+        QRgb *imageBytes[h];
+        for (int i = 0; i < h; i++){
+            imageBytes[i] = (QRgb*)(image->scanLine(i));
+        }
+
+        #pragma omp parallel for
         for (int i = 0; i < w; i++)
             for (int j = 0; j < h; j++)
             {
-                delete col;
-                col = new QColor (image->pixelColor(i, j));
-                col->setRed(Y[j * w + i]);
-                col->setGreen(U[j * w + i]);
-                col->setBlue(V[j * w + i]);
-
-                image->setPixelColor(i, j, *col);
+                imageBytes[j][i] = qRgb(Y[j * w + i], U[j * w + i], V[j * w + i]);
             }
-        delete col;
+
+
+
+//        for (int i = 0; i < w; i++)
+//            for (int j = 0; j < h; j++)
+//            {
+//                delete col;
+//                col = new QColor (image->pixelColor(i, j));
+//                col->setRed(Y[j * w + i]);
+//                col->setGreen(U[j * w + i]);
+//                col->setBlue(V[j * w + i]);
+
+//                image->setPixelColor(i, j, *col);
+//            }
+//        delete col;
+        return true;
     }
-    return true;//return new QPixmap (QPixmap::fromImage(newImage));
+    else return false;
+}
+
+bool Graphic::setYUVMatixOMP()
+{
+    int width = image->width();
+    int height = image->height();
+
+    if(image->format()!=QImage::Format_RGB32    && image->format() != QImage::Format_ARGB32)
+    {
+       printf("Wrong image format\n");
+       return false;
+    }
+
+    // RGB32 to YUV420
+    int size = width * height;
+    // Y
+    Y = new unsigned char [size];
+    U = new unsigned char [size];
+    V = new unsigned char [size];
+
+#pragma omp parallel for
+    for (int i = 0; i < width; i++)
+       for (int j = 0; j < height; j++)
+       {
+         QColor tempColor = image->pixelColor(i, j);//Canvas->Pixels[i][j];
+         int r = tempColor.red();
+         int g = tempColor.green();
+         int b = tempColor.blue();
+
+         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
+         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
+         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
+       }
+    return true;
+}
+
+bool Graphic::setYUVOMP()
+{
+    if (image != nullptr)
+    {
+
+        int w = image->width();
+        int h = image->height();
+
+        QRgb *imageBytes[h];
+        for (int i = 0; i < h; i++){
+            imageBytes[i] = (QRgb*)(image->scanLine(i));
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < w; i++)
+            for (int j = 0; j < h; j++)
+            {
+                imageBytes[j][i] = qRgb(Y[j * w + i], U[j * w + i], V[j * w + i]);
+            }
+        return true;
+    }
+    else return false;
+}
+
+void Graphic::sobelOperatorOMP()
+{
+    int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+    int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+
+    int w = image->width();
+    int h = image->height();
+
+    QRgb *imageBytes[h];
+    QRgb *newImageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
+
+#pragma omp parallel for
+    for (int i = 0; i < h; i++){
+        newImageBytes[i] = new QRgb[w];
+        for (int j = 0; j < w; j++){
+            newImageBytes[i][j] = imageBytes[i][j];
+        }
+    }
+
+#pragma omp parallel for
+    for (int i = 1; i < w-1; i++) {
+        int kx = -1;        //обозначают границы
+        int ky = -1;
+        for (int j = 1; j < h-1; j++) {
+            QRgb col[3][3];
+            col[0][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[0][1] = newImageBytes[j][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
+            col[0][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            col[1][0] = newImageBytes[j][i];//newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
+            col[1][1] = newImageBytes[j + (ky > 0 ? 0 : 1)][i];//newImage.pixelColor(i, j);
+            col[1][2] = newImageBytes[j - (ky < 0 ? 0 : 1)][i];//newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
+            col[2][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[2][1] = newImageBytes[j][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
+            col[2][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            QRgb color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
+
+
+            if (i == w - 1)
+                ky = 1;
+            else
+                ky = 0;
+            if (j == h - 1)
+                kx = 1;
+            else //if (j != 0)
+                    kx = 0;
+
+//                else
+//                    ky = -1;
+            imageBytes[j][i] = color;
+
+        }
+    }
+}
+
+void Graphic::BinarizationOMP()
+{
+    int w = image->width();
+    int h = image->height();
+
+    QRgb *imageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
+
+    #pragma omp parallel for
+    for (int i = 0; i < w; i++)
+        for (int j = 0; j < h; j++)
+        {
+            int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
+
+            if (bright > LIMIT)       //ярость больше порога?
+            {
+                imageBytes[j][i] = qRgb(255, 255, 255);
+            }
+            else
+            {
+                imageBytes[j][i] = qRgb(0, 0, 0);
+            }
+        }
 }
 
 QColor Graphic::matrixColorMul(QColor colors[3][3], int matrix[3][3])
@@ -577,6 +757,27 @@ QColor Graphic::matrixColorMul(QColor colors[3][3], int matrix[3][3])
     b = qMax (0,
               qMin (b, 255));
     return QColor (r, g, b);
+}
+
+QRgb Graphic::matrixColorMul(QRgb colors[3][3], int matrix[3][3])
+{
+    int r = 0, g = 0, b = 0;
+    r = qRed(colors[0][0]) * matrix[0][0] + qRed(colors[0][1]) * matrix[0][1] + qRed(colors[0][2]) * matrix[0][2] +
+            qRed(colors[1][0]) * matrix[1][0] + qRed(colors[1][1] )* matrix[1][1] + qRed(colors[1][2]) * matrix[1][2] +
+            qRed(colors[2][0]) * matrix[2][0] + qRed(colors[2][1]) * matrix[2][1] + qRed(colors[2][2]) * matrix[2][2];
+    g = qGreen(colors[0][0]) * matrix[0][0] + qGreen(colors[0][1]) * matrix[0][1] + qGreen(colors[0][2]) * matrix[0][2] +
+            qGreen(colors[1][0]) * matrix[1][0] + qGreen(colors[1][1]) * matrix[1][1] + qGreen(colors[1][2]) * matrix[1][2] +
+            qGreen(colors[2][0]) * matrix[2][0] + qGreen(colors[2][1]) * matrix[2][1] + qGreen(colors[2][2]) * matrix[2][2];
+    b = qBlue(colors[0][0])* matrix[0][0] + qBlue(colors[0][1]) * matrix[0][1] + qBlue(colors[0][2]) * matrix[0][2] +
+            qBlue(colors[1][0]) * matrix[1][0] + qBlue(colors[1][1]) * matrix[1][1] + qBlue(colors[1][2]) * matrix[1][2] +
+            qBlue(colors[2][0]) * matrix[2][0] + qBlue(colors[2][1] )* matrix[2][1] + qBlue(colors[2][2]) * matrix[2][2];
+    r = qMax (0,
+              qMin (r, 255));
+    g = qMax (0,
+              qMin (g, 255));
+    b = qMax (0,
+              qMin (b, 255));
+    return qRgb (r, g, b);
 }
 
 unsigned char Graphic::matrixMul(unsigned char channel[3][3], int matrix[3][3])
@@ -606,40 +807,65 @@ QColor Graphic::colorNormir(QColor colorX, QColor colorY)
     return QColor (r, g, b);
 }
 
+QRgb Graphic::colorNormir(QRgb colorX, QRgb colorY)
+{
+    double rx = qRed(colorX), gx = qGreen(colorX), bx = qBlue(colorX);
+    double ry = qRed(colorY), gy = qGreen(colorY), by = qBlue(colorY);
+    rx = sqrt(rx * rx + ry * ry);
+    gx = sqrt(gx * gx + gy * gy);
+    bx = sqrt(bx * bx + by * by);
+    int r = qMax (0,
+              qMin (static_cast <int> (rx), 255));
+    int g = qMax (0,
+              qMin (static_cast <int>(gx), 255));
+    int b = qMax (0,
+              qMin (static_cast <int>(bx), 255));
+    return qRgb (r, g, b);
+}
+
 unsigned char Graphic::componentNormir(unsigned char colorX, unsigned char colorY)
 {
     return static_cast <unsigned char> (qMax (0,
                  qMin (static_cast <int> (sqrt(colorX * colorX + colorY * colorY)), 255)));
 }
 
-QImage* Graphic::sobelOperator()
+void Graphic::sobelOperator()
 {
+    int w = image->width();
+    int h = image->height();
+
     int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
     int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
 
-    QColor col[3][3];
+    QRgb *imageBytes[h];
+    QRgb *newImageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
 
-    QImage newImage = QImage (*image);
-    int w = image->width();
-    int h = image->height();
-//    float r,g,b;
-    int kx, ky;     //обозначают границы
+    for (int i = 0; i < h; i++){
+        newImageBytes[i] = new QRgb[w];
+        for (int j = 0; j < w; j++){
+            newImageBytes[i][j] = imageBytes[i][j];
+        }
+    }
+
     for (int i = 1; i < w-1; i++) {
-        kx = -1;
-        ky = -1;
+        int kx = -1;        //обозначают границы
+        int ky = -1;
         for (int j = 1; j < h-1; j++) {
-            col[0][0] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
-            col[0][1] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
-            col[0][2] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
-            col[1][0] = newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
-            col[1][1] = newImage.pixelColor(i, j);
-            col[1][2] = newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
-            col[2][0] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
-            col[2][1] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
-            col[2][2] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
-            QColor color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
+            QRgb col[3][3];
+            col[0][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[0][1] = newImageBytes[j][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
+            col[0][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            col[1][0] = newImageBytes[j][i];//newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
+            col[1][1] = newImageBytes[j + (ky > 0 ? 0 : 1)][i];//newImage.pixelColor(i, j);
+            col[1][2] = newImageBytes[j - (ky < 0 ? 0 : 1)][i];//newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
+            col[2][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[2][1] = newImageBytes[j][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
+            col[2][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            QRgb color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
 
-            image->setPixelColor (i, j, color);
 
             if (i == w - 1)
                 ky = 1;
@@ -649,12 +875,49 @@ QImage* Graphic::sobelOperator()
                 kx = 1;
             else //if (j != 0)
                     kx = 0;
+
 //                else
 //                    ky = -1;
+            imageBytes[j][i] = color;
+
         }
     }
 
-    return image;
+//    QColor col[3][3];
+
+//    QImage newImage = QImage (*image);
+
+////    float r,g,b;
+//    int kx, ky;     //обозначают границы
+//    for (int i = 1; i < w-1; i++) {
+//        kx = -1;
+//        ky = -1;
+//        for (int j = 1; j < h-1; j++) {
+//            col[0][0] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+//            col[0][1] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
+//            col[0][2] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+//            col[1][0] = newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
+//            col[1][1] = newImage.pixelColor(i, j);
+//            col[1][2] = newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
+//            col[2][0] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+//            col[2][1] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
+//            col[2][2] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+//            QColor color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
+
+//            image->setPixelColor (i, j, color);
+
+//            if (i == w - 1)
+//                ky = 1;
+//            else
+//                ky = 0;
+//            if (j == h - 1)
+//                kx = 1;
+//            else //if (j != 0)
+//                    kx = 0;
+////                else
+////                    ky = -1;
+//        }
+//    }
 }
 
 QImage *Graphic::outlineSelectionLinear()
@@ -693,18 +956,14 @@ QImage *Graphic::outlineSelectionParallel(int threadCount)
         threads[i]->run();
     }
     bool theadFinished = false;
-//     while (threads[0]->isRunning()){qDebug()<<"Running";}
+
     while (!theadFinished){        //пока все потоки не завершат работу
         theadFinished = true;
         for (int i = 0; i < threads.count(); i++){  //раз за разом обходим наши потоки
-            if (threads[i]->isRunning())
+            if (threads[i]->isRunning()){
                 theadFinished = false;
-//            if (threads[i]->isFinished()){
-//                threadCount--;
-//                threads.removeAt(i);
-//                i--;
-//            }
-//            qDebug()<<threadCount<<" "<<threads.count()<<" "<<i;
+                break;
+            }
         }
 
     }
@@ -721,6 +980,17 @@ QImage *Graphic::outlineSelectionParallel(int threadCount)
         delete threads[i];
     }
     threads.clear();
+    return image;
+}
+
+QImage *Graphic::outlineSelectionOMP(int threadCount)
+{
+    qDebug()<<"Зашли в OMP";
+    omp_set_num_threads(threadCount);
+    setYUVMatixOMP();
+    setYUVOMP();
+    sobelOperatorOMP();
+    BinarizationOMP();
     return image;
 }
 

@@ -220,66 +220,66 @@ void MainWindow::Gauss()
 }
 
 
-bool MainWindow::setYUVMatix()
-{
-    int width = image->width();
-    int height = image->height();
+//bool MainWindow::setYUVMatix()
+//{
+//    int width = image->width();
+//    int height = image->height();
 
-    if(image->format()!=QImage::Format_RGB32    && image->format() != QImage::Format_ARGB32)
-    {
-       printf("Wrong image format\n");
-       return false;
-    }
+//    if(image->format()!=QImage::Format_RGB32    && image->format() != QImage::Format_ARGB32)
+//    {
+//       printf("Wrong image format\n");
+//       return false;
+//    }
 
-    // RGB32 to YUV420
-    int size = width * height;
-    // Y
-    Y = new unsigned char [size];
-    U = new unsigned char [size];
-    V = new unsigned char [size];
+//    // RGB32 to YUV420
+//    int size = width * height;
+//    // Y
+//    Y = new unsigned char [size];
+//    U = new unsigned char [size];
+//    V = new unsigned char [size];
 
-    QColor tempColor;
-    for (int i = 0; i < width; i++)
-       for (int j = 0; j < height; j++)
-       {
-         tempColor = image->pixelColor(i, j);//Canvas->Pixels[i][j];
-         int r = tempColor.red();
-         int g = tempColor.green();
-         int b = tempColor.blue();
+//    QColor tempColor;
+//    for (int i = 0; i < width; i++)
+//       for (int j = 0; j < height; j++)
+//       {
+//         tempColor = image->pixelColor(i, j);//Canvas->Pixels[i][j];
+//         int r = tempColor.red();
+//         int g = tempColor.green();
+//         int b = tempColor.blue();
 
 
-         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
-         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
-         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
-       }
-    return true;
-}
+//         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
+//         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
+//         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
+//       }
+//    return true;
+//}
 
-bool MainWindow::setYUV()
-{
-    if (image != nullptr)
-    {
-//        delete
-//        image = new QImage (*image);
-        //newImage.invertPixels();
-        QColor* col = new QColor ();
-        int w = image->width();
-        int h = image->height();
-        for (int i = 0; i < w; i++)
-            for (int j = 0; j < h; j++)
-            {
-                delete col;
-                col = new QColor (image->pixelColor(i, j));
-                col->setRed(Y[j * w + i]);
-                col->setGreen(U[j * w + i]);
-                col->setBlue(V[j * w + i]);
+//bool MainWindow::setYUV()
+//{
+//    if (image != nullptr)
+//    {
+////        delete
+////        image = new QImage (*image);
+//        //newImage.invertPixels();
+//        QColor* col = new QColor ();
+//        int w = image->width();
+//        int h = image->height();
+//        for (int i = 0; i < w; i++)
+//            for (int j = 0; j < h; j++)
+//            {
+//                delete col;
+//                col = new QColor (image->pixelColor(i, j));
+//                col->setRed(Y[j * w + i]);
+//                col->setGreen(U[j * w + i]);
+//                col->setBlue(V[j * w + i]);
 
-                image->setPixelColor(i, j, *col);
-            }
-        delete col;
-    }
-    return true;//return new QPixmap (QPixmap::fromImage(newImage));
-}
+//                image->setPixelColor(i, j, *col);
+//            }
+//        delete col;
+//    }
+//    return true;//return new QPixmap (QPixmap::fromImage(newImage));
+//}
 
 
 
@@ -348,10 +348,22 @@ void MainWindow::on_pushButtonYUV_clicked()
 
         QDateTime finish2 = QDateTime::currentDateTime();
 
-//        delete myGraphic2->imageItem;
-//        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+        delete myGraphic2->imageItem;
+        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
         secs = start2.msecsTo(finish2);
         ui->labelParell->setText("Параллельный алгоритм: " + QString::number(secs));
 
+///
+        myGraphic2->setImage(myGraphic->getImage());
+        QDateTime start3 = QDateTime::currentDateTime();
+        delete image;
+        image = myGraphic2->outlineSelectionOMP(ui->spinBoxThreadCount->value());//sobelOperator();
+
+        QDateTime finish3 = QDateTime::currentDateTime();
+
+//        delete myGraphic2->imageItem;
+//        myGraphic2->imageItem = myGraphic2->myScene->addPixmap(QPixmap::fromImage(*image));
+        secs = start3.msecsTo(finish3);
+        ui->labelOpenMP->setText("OpenMP-алгоритм: " + QString::number(secs));
 }
 

@@ -47,13 +47,15 @@ private:
     QRect rect;     //прямоугольник, который будет обрабатываться потоком
 
     QColor matrixColorMul (QColor colors[3][3], int matrix[3][3]);
+    QRgb matrixColorMul (QRgb colors[3][3], int matrix[3][3]);
     unsigned char matrixMul (unsigned char channel[3][3], int matrix[3][3]);
     QColor colorNormir (QColor colorX, QColor colorY);
+    QRgb colorNormir (QRgb colorX, QRgb colorY);
     unsigned char componentNormir (unsigned char colorX, unsigned char colorY);
 
     bool setYUVMatix ();
     bool setYUV ();
-    void sobelOperator();
+    void sobelOperator();       ///ДОДЕЛАТЬ!!!
     void binarization ();
 
     bool setYUVMatixPart();

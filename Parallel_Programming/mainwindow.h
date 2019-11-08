@@ -63,8 +63,8 @@ public slots:
 
 //    void MyFilter();
 
-    bool setYUVMatix ();
-    bool setYUV ();
+//    bool setYUVMatix ();
+//    bool setYUV ();
 //            bool setYUV ();
 //                bool setYUV ();
 
