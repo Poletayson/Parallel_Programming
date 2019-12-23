@@ -50,23 +50,10 @@ public:
 public slots:
     void setStart ();
 
-//    void Binarization ();
-
-//    void makeHist ();
     void Repair ();
 
     void setNoise ();
-    void Median ();
-    void Gauss ();
-//    void Rezk();
-//    void Aquarel();
 
-//    void MyFilter();
-
-//    bool setYUVMatix ();
-//    bool setYUV ();
-//            bool setYUV ();
-//                bool setYUV ();
 
     QString getFile();
 

@@ -112,53 +112,6 @@ QPixmap* Graphic::Brightness(int val)       //яркость
     return new QPixmap (QPixmap::fromImage(newImage));
 }
 
-QPixmap* Graphic::Contrast (float val)      //контраст
-{
-    QImage* newImage;
-    if (reserve != nullptr)
-    {
-        newImage = new QImage (reserve->pixmap().toImage());
-        QColor* col;
-        double r = 0, g = 0, b = 0;
-        for (int i = 0; i < newImage->width(); i++)
-            for (int j = 0; j < newImage->height(); j++)
-            {
-                col = new QColor (newImage->pixelColor(i, j));
-                r = r + col->red();
-                g = g + col->green();
-                b = b + col->blue();
-                delete col;
-            }
-        r = r / (newImage->width() * newImage->height());     //средние значения цветов
-        g = g / (newImage->width() * newImage->height());
-        b = b / (newImage->width() * newImage->height());
-
-        int rn, gn, bn;
-        for (int i = 0; i < newImage->width(); i++)
-            for (int j = 0; j < newImage->height(); j++)
-            {
-                col = new QColor (newImage->pixelColor(i, j));
-                rn = val*(col->red() - r) + r;
-                gn = val*(col->green() - g) + g;
-                bn = val*(col->blue() - b) + b;
-                rn = std::min (rn, 255);
-                gn = std::min (gn, 255);
-                bn = std::min (bn, 255);
-                rn = std::max (rn, 0);
-                gn = std::max (gn, 0);
-                bn = std::max (bn, 0);
-                col->setRed(rn);
-                col->setGreen(gn);
-                col->setBlue(bn);
-                newImage->setPixelColor(i, j, *col);
-                delete col;
-            }
-        //delete col;
-    }
-    QPixmap *retpix = new QPixmap (QPixmap::fromImage(*newImage));
-    delete newImage;
-    return retpix;
-}
 
 void Graphic::Binarization()       //яркость
 {
@@ -185,339 +138,9 @@ void Graphic::Binarization()       //яркость
             }
         }
 
-//        QColor col;
-//        int bright;           //яркость
-
-//        for (int i = 0; i < w; i++)
-//            for (int j = 0; j < h; j++)
-//            {
-//                col = image->pixelColor(i, j);
-//                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
-
-//                if (bright > LIMIT)       //ярость больше порога?
-//                {
-//                    col.setBlue(255);
-//                    col.setGreen(255);
-//                    col.setRed(255);
-//                }
-//                else
-//                {
-//                    col.setBlue(0);
-//                    col.setGreen(0);
-//                    col.setRed(0);
-//                }
-//                image->setPixelColor(i, j, col);
-//            }
 }
 
 
-QPixmap* Graphic::Median ()
-{
-    QImage newImage;
-    QPixmap *pxm = new QPixmap (reserve->pixmap().width() + 2, reserve->pixmap().height() + 2);
-    QPainter painter (pxm);
-    if (reserve != nullptr)
-    {
-       // newImage = *new QImage (reserve->pixmap().width() + 2, reserve->pixmap().height() + 2, QImage::Format_RGB32); //изображение, большее на пиксель //(reserve->pixmap().toImage(),);
-        // (QPixmap::fromImage(newImage));
-
-        painter.drawPixmap(0, 1, 1, reserve->pixmap().height(), reserve->pixmap(), 0, 0, 1, reserve->pixmap().height()); //рисуем столбец
-        painter.drawPixmap(reserve->pixmap().width() + 1, 1, 1, reserve->pixmap().height(), reserve->pixmap(), reserve->pixmap().width() - 1, 0, 1, reserve->pixmap().height()); //рисуем столбец
-
-        painter.drawPixmap(1, 0, reserve->pixmap().width(), 1, reserve->pixmap(), 0, 0, reserve->pixmap().width(), 1); //рисуем столбец
-        painter.drawPixmap(1, reserve->pixmap().height() + 1, reserve->pixmap().width(), 1, reserve->pixmap(), 0, reserve->pixmap().height() - 1, reserve->pixmap().width(),  1); //рисуем столбец
-        painter.drawPixmap(1, 1, reserve->pixmap()); //рисуем на увеличенном пиксмапе
-
-        //int r, g, b;
-        int sum;
-        QList <int> lst;
-        QColor* col = new QColor();
-        newImage = *new QImage (pxm->toImage());
-        for (int i = 1; i < pxm->width() - 1; i++)
-            for (int j = 1; j < pxm->height() - 1; j++)
-            {
-                col = new QColor (newImage.pixelColor(i, j));
-//                sum = 0;
-                lst.append(newImage.pixelColor(i, j-1).red());
-                lst.append(newImage.pixelColor(i, j).red());
-                lst.append(newImage.pixelColor(i, j+1).red());
-                lst.append(newImage.pixelColor(i-1, j-1).red());
-                lst.append(newImage.pixelColor(i-1, j).red());
-                lst.append(newImage.pixelColor(i-1, j+1).red());
-                lst.append(newImage.pixelColor(i+1, j-1).red());
-                lst.append(newImage.pixelColor(i+1, j).red());
-                lst.append(newImage.pixelColor(i+1, j+1).red());
-//                sum += newImage.pixelColor(i-1, j-1).red();
-//                sum += newImage.pixelColor(i-1, j).red();
-//                sum += newImage.pixelColor(i-1, j+1).red();
-//                sum += newImage.pixelColor(i, j-1).red();
-//                sum += newImage.pixelColor(i, j).red();
-//                sum += newImage.pixelColor(i, j+1).red();
-//                sum += newImage.pixelColor(i+1, j-1).red();
-//                sum += newImage.pixelColor(i+1, j).red();
-//                sum += newImage.pixelColor(i+1, j+1).red();
-
-                qSort (lst.begin(), lst.end());
-                col->setRed(lst[4]);
-                lst.clear();
-                lst.append(newImage.pixelColor(i, j-1).blue());
-                lst.append(newImage.pixelColor(i, j).blue());
-                lst.append(newImage.pixelColor(i, j+1).blue());
-                lst.append(newImage.pixelColor(i-1, j-1).blue());
-                lst.append(newImage.pixelColor(i-1, j).blue());
-                lst.append(newImage.pixelColor(i-1, j+1).blue());
-                lst.append(newImage.pixelColor(i+1, j-1).blue());
-                lst.append(newImage.pixelColor(i+1, j).blue());
-                lst.append(newImage.pixelColor(i+1, j+1).blue());
-//                sum = 0;
-//                sum += newImage.pixelColor(i-1, j-1).blue();
-//                sum += newImage.pixelColor(i-1, j).blue();
-//                sum += newImage.pixelColor(i-1, j+1).blue();
-//                sum += newImage.pixelColor(i, j-1).blue();
-//                sum += newImage.pixelColor(i, j).blue();
-//                sum += newImage.pixelColor(i, j+1).blue();
-//                sum += newImage.pixelColor(i+1, j-1).blue();
-//                sum += newImage.pixelColor(i+1, j).blue();
-//                sum += newImage.pixelColor(i+1, j+1).blue();
-                qSort (lst.begin(), lst.end());
-                col->setBlue(lst[4]);
-                lst.clear();
-                lst.append(newImage.pixelColor(i, j-1).green());
-                lst.append(newImage.pixelColor(i, j).green());
-                lst.append(newImage.pixelColor(i, j+1).green());
-                lst.append(newImage.pixelColor(i-1, j-1).green());
-                lst.append(newImage.pixelColor(i-1, j).green());
-                lst.append(newImage.pixelColor(i-1, j+1).green());
-                lst.append(newImage.pixelColor(i+1, j-1).green());
-                lst.append(newImage.pixelColor(i+1, j).green());
-                lst.append(newImage.pixelColor(i+1, j+1).green());
-//                sum = 0;
-//                sum += newImage.pixelColor(i-1, j-1).green();
-//                sum += newImage.pixelColor(i-1, j).green();
-//                sum += newImage.pixelColor(i-1, j+1).green();
-//                sum += newImage.pixelColor(i, j-1).green();
-//                sum += newImage.pixelColor(i, j).green();
-//                sum += newImage.pixelColor(i, j+1).green();
-//                sum += newImage.pixelColor(i+1, j-1).green();
-//                sum += newImage.pixelColor(i+1, j).green();
-//                sum += newImage.pixelColor(i+1, j+1).green();
-                qSort (lst.begin(), lst.end());
-                col->setGreen(lst[4]);
-                lst.clear();
-
-                painter.setPen(*col);
-                painter.drawPoint(i,j);
-
-            }
-        delete col;
-    }
-
-    return new QPixmap (pxm->copy(1, 1, reserve->pixmap().width(), reserve->pixmap().height()));//new QPixmap (QPixmap::fromImage(newImage));
-}
-
-QPixmap* Graphic::Gauss ()
-{
-    QImage newImage;
-    QPixmap *pxm = new QPixmap (reserve->pixmap().width() + 2, reserve->pixmap().height() + 2);
-    QPainter painter (pxm);
-    if (reserve != nullptr)
-    {
-        qreal mask[9];
-        qreal A;
-        qreal ptrSum = 0;
-        for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
-            {
-                ptrSum = ptrSum + qPow(M_E, -((i-1)*(i-1)+(j-1)*(j-1))/(SIGMA*SIGMA));
-            }
-        A = 1/ptrSum;
-        for (int i = 0; i < 3; i++)         //находим коэффициенты матрицы
-            for (int j = 0; j < 3; j++)
-            {
-                mask[i*3 + j] = A * qPow(M_E, -((i-1)*(i-1)+(j-1)*(j-1))/(SIGMA*SIGMA));//ptrSum = ptrSum + qPow(M_E, -((i-1)*(i-1)+(j-1)*(j-1))/(SIGMA*SIGMA));
-            }
-
-        painter.drawPixmap(0, 1, 1, reserve->pixmap().height(), reserve->pixmap(), 0, 0, 1, reserve->pixmap().height()); //рисуем столбец
-        painter.drawPixmap(reserve->pixmap().width() + 1, 1, 1, reserve->pixmap().height(), reserve->pixmap(), reserve->pixmap().width() - 1, 0, 1, reserve->pixmap().height()); //рисуем столбец
-
-        painter.drawPixmap(1, 0, reserve->pixmap().width(), 1, reserve->pixmap(), 0, 0, reserve->pixmap().width(), 1); //рисуем столбец
-        painter.drawPixmap(1, reserve->pixmap().height() + 1, reserve->pixmap().width(), 1, reserve->pixmap(), 0, reserve->pixmap().height() - 1, reserve->pixmap().width(),  1); //рисуем столбец
-        painter.drawPixmap(1, 1, reserve->pixmap()); //рисуем на увеличенном пиксмапе
-
-
-        QList <int> lst;
-        qreal r, g, b;
-        QColor* col = new QColor();
-        newImage = *new QImage (pxm->toImage());
-        for (int i = 1; i < pxm->width() - 1; i++)
-            for (int j = 1; j < pxm->height() - 1; j++)
-            {
-                r = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        r = r + mask[i1*3 + j1] * newImage.pixelColor(i-1 + i1, j- 1 + j1).red();
-                    }
-                g = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        g = g + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).green();
-                    }
-                b = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        b = b + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).blue();
-                    }
-
-//                col->setRed(r);
-//                col->setGreen(g);
-//                col->setBlue(b);
-                col= new QColor (r, g, b);
-                painter.setPen(*col);
-                painter.drawPoint(i, j);
-                delete col;
-            }
-
-    }
-    SIGMA = 0.8;        //на всякий случай устанавливаем по умолчанию
-    return new QPixmap (pxm->copy(1, 1, reserve->pixmap().width(), reserve->pixmap().height()));//new QPixmap (QPixmap::fromImage(newImage));
-}
-
-
-QPixmap* Graphic::Rezk ()
-{
-    QImage newImage;
-    QPixmap *pxm = new QPixmap (reserve->pixmap().width() + 2, reserve->pixmap().height() + 2);
-    QPainter painter (pxm);
-    int k = 8;
-    if (reserve != nullptr)
-    {
-        qreal mask[9];
-
-        for (int i = 0; i < 3; i++)         //находим коэффициенты матрицы
-            for (int j = 0; j < 3; j++)
-            {
-                mask[i*3 + j] = -k/8;//ptrSum = ptrSum + qPow(M_E, -((i-1)*(i-1)+(j-1)*(j-1))/(SIGMA*SIGMA));
-            }
-        mask[4] = k + 1;
-
-
-
-        painter.drawPixmap(0, 1, 1, reserve->pixmap().height(), reserve->pixmap(), 0, 0, 1, reserve->pixmap().height()); //рисуем столбец
-        painter.drawPixmap(reserve->pixmap().width() + 1, 1, 1, reserve->pixmap().height(), reserve->pixmap(), reserve->pixmap().width() - 1, 0, 1, reserve->pixmap().height()); //рисуем столбец
-
-        painter.drawPixmap(1, 0, reserve->pixmap().width(), 1, reserve->pixmap(), 0, 0, reserve->pixmap().width(), 1); //рисуем столбец
-        painter.drawPixmap(1, reserve->pixmap().height() + 1, reserve->pixmap().width(), 1, reserve->pixmap(), 0, reserve->pixmap().height() - 1, reserve->pixmap().width(),  1); //рисуем столбец
-        painter.drawPixmap(1, 1, reserve->pixmap()); //рисуем на увеличенном пиксмапе
-
-        qreal r, g, b;
-        QColor* col;// = new QColor();
-        newImage = *new QImage (pxm->toImage());
-        for (int i = 1; i < pxm->width() - 1; i++)
-            for (int j = 1; j < pxm->height() - 1; j++)
-            {
-                r = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        r = r + mask[i1*3 + j1] * newImage.pixelColor(i-1 + i1, j- 1 + j1).red();
-                    }
-                g = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        g = g + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).green();
-                    }
-                b = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        b = b + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).blue();
-                    }
-                r = std::max (r, 0.);       //приводим цвета к диапазону
-                g = std::max (g, 0.);
-                b = std::max (b, 0.);
-                r = std::min (r, 255.);
-                g = std::min (g, 255.);
-                b = std::min (b, 255.);
-                col= new QColor ((int)r, (int)g, (int)b);
-                painter.setPen(*col);
-                painter.drawPoint(i, j);
-                delete col;
-            }
-
-    }
-    return new QPixmap (pxm->copy(1, 1, reserve->pixmap().width(), reserve->pixmap().height()));
-}
-
-
-QPixmap* Graphic::MyFilter (int k)  //мой фильтр
-{
-    QImage newImage;
-    QPixmap *pxm = new QPixmap (reserve->pixmap().width() + 2, reserve->pixmap().height() + 2);
-    QPainter painter (pxm);
-    //int k = 8;
-    if (reserve != nullptr)
-    {
-        qreal mask[9];
-
-        for (int i = 0; i < 3; i++)         //находим коэффициенты матрицы
-            for (int j = 0; j < 3; j++)
-            {
-                mask[i*3 + j] = -k/8;//ptrSum = ptrSum + qPow(M_E, -((i-1)*(i-1)+(j-1)*(j-1))/(SIGMA*SIGMA));
-            }
-        mask[4] = k + 1;
-
-
-
-        painter.drawPixmap(0, 1, 1, reserve->pixmap().height(), reserve->pixmap(), 0, 0, 1, reserve->pixmap().height()); //рисуем столбец
-        painter.drawPixmap(reserve->pixmap().width() + 1, 1, 1, reserve->pixmap().height(), reserve->pixmap(), reserve->pixmap().width() - 1, 0, 1, reserve->pixmap().height()); //рисуем столбец
-
-        painter.drawPixmap(1, 0, reserve->pixmap().width(), 1, reserve->pixmap(), 0, 0, reserve->pixmap().width(), 1); //рисуем столбец
-        painter.drawPixmap(1, reserve->pixmap().height() + 1, reserve->pixmap().width(), 1, reserve->pixmap(), 0, reserve->pixmap().height() - 1, reserve->pixmap().width(),  1); //рисуем столбец
-        painter.drawPixmap(1, 1, reserve->pixmap()); //рисуем на увеличенном пиксмапе
-
-        qreal r, g, b;
-        QColor* col;// = new QColor();
-        newImage = *new QImage (pxm->toImage());
-        for (int i = 1; i < pxm->width() - 1; i++)
-            for (int j = 1; j < pxm->height() - 1; j++)
-            {
-                r = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        r = r + mask[i1*3 + j1] * newImage.pixelColor(i-1 + i1, j- 1 + j1).red();
-                    }
-                g = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        g = g + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).green();
-                    }
-                b = 0;
-                for (int i1 = 0; i1 < 3; i1++)         //находим коэффициенты матрицы
-                    for (int j1 = 0; j1 < 3; j1++)
-                    {
-                        b = b + mask[i1*3 + j1] * newImage.pixelColor(i -1 + i1, j-1 + j1).blue();
-                    }
-//                r = std::max (r, 0.);
-//                g = std::max (g, 0.);
-//                b = std::max (b, 0.);
-                if (r >= 255 || r <= 0) {r = 0; g = 0; b = 0;}
-                if (g >= 255 || g <= 0) {r = 0; g = 0; b = 0;}
-                if (b >= 255 || b <= 0) {r = 0; g = 0; b = 0;}
-                col= new QColor (r, g, b);
-                painter.setPen(*col);
-                painter.drawPoint(i, j);
-                delete col;
-            }
-
-    }
-    return new QPixmap (pxm->copy(1, 1, reserve->pixmap().width(), reserve->pixmap().height()));
-}
 
 bool Graphic::setYUVMatix()
 {
@@ -570,7 +193,6 @@ bool Graphic::setYUV()
             imageBytes[i] = (QRgb*)(image->scanLine(i));
         }
 
-        #pragma omp parallel for
         for (int i = 0; i < w; i++)
             for (int j = 0; j < h; j++)
             {
@@ -723,6 +345,173 @@ void Graphic::BinarizationOMP()
 
     #pragma omp parallel for
     for (int i = 0; i < w; i++)
+        for (int j = 0; j < h; j++)
+        {
+            int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
+
+            if (bright > LIMIT)       //ярость больше порога?
+            {
+                imageBytes[j][i] = qRgb(255, 255, 255);
+            }
+            else
+            {
+                imageBytes[j][i] = qRgb(0, 0, 0);
+            }
+        }
+}
+
+bool Graphic::setYUVMatixMPI()
+{
+    if(image->format()!=QImage::Format_RGB32    && image->format() != QImage::Format_ARGB32)
+    {
+       printf("Wrong image format\n");
+       return false;
+    }
+    int procRank, procSize;
+    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
+    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
+
+
+    int x1 = width/procSize * procRank; //начало
+    //if (x1 == 0) ++x1;
+    int lineH = height;
+    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
+
+    for (int i = x1; i < x2; i++)
+       for (int j = 0; j < height; j++)
+       {
+         QColor tempColor = image->pixelColor(i, j);//Canvas->Pixels[i][j];
+         int r = tempColor.red();
+         int g = tempColor.green();
+         int b = tempColor.blue();
+
+         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
+         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
+         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
+       }
+    return true;
+}
+
+bool Graphic::setYUVMPI()
+{
+    if (image != nullptr)
+    {
+        int procRank, procSize;
+        MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
+        MPI_Comm_size(MPI_COMM_WORLD, &procSize);
+
+
+        int x1 = width/procSize * procRank; //начало
+        //if (x1 == 0) ++x1;
+        int lineH = height;
+        int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
+
+        int w = image->width();
+        int h = image->height();
+
+        QRgb *imageBytes[h];
+        for (int i = 0; i < h; i++){
+            imageBytes[i] = (QRgb*)(image->scanLine(i));
+        }
+
+        for (int i = x1; i < x2; i++)
+            for (int j = 0; j < h; j++)
+            {
+                imageBytes[j][i] = qRgb(Y[j * w + i], U[j * w + i], V[j * w + i]);
+            }
+        return true;
+    }
+    else return false;
+}
+
+void Graphic::sobelOperatorMPI()
+{
+    int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+    int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+
+    int w = image->width();
+    int h = image->height();
+
+    int procRank, procSize;
+    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
+    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
+
+
+    int x1 = width/procSize * procRank; //начало
+    if (x1 == 0) ++x1;
+    int lineH = height;
+    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width - 1;
+
+    QRgb *imageBytes[h];
+    QRgb *newImageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
+
+//#pragma omp parallel for
+    for (int i = 0; i < h; i++){
+        newImageBytes[i] = new QRgb[w];
+        for (int j = 0; j < w; j++){
+            newImageBytes[i][j] = imageBytes[i][j];
+        }
+    }
+
+//#pragma omp parallel for
+    for (int i = x1; i < x2; i++) {
+        int kx = -1;        //обозначают границы
+        int ky = -1;
+        for (int j = 1; j < h-1; j++) {
+            QRgb col[3][3];
+            col[0][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[0][1] = newImageBytes[j][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
+            col[0][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            col[1][0] = newImageBytes[j][i];//newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
+            col[1][1] = newImageBytes[j + (ky > 0 ? 0 : 1)][i];//newImage.pixelColor(i, j);
+            col[1][2] = newImageBytes[j - (ky < 0 ? 0 : 1)][i];//newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
+            col[2][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+            col[2][1] = newImageBytes[j][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
+            col[2][2] = newImageBytes[j + (ky > 0 ? 0 : 1)][i + (kx > 0 ? 0 : 1)];//newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+            QRgb color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
+
+
+            if (i == w - 1)
+                ky = 1;
+            else
+                ky = 0;
+            if (j == h - 1)
+                kx = 1;
+            else //if (j != 0)
+                    kx = 0;
+
+//                else
+//                    ky = -1;
+            imageBytes[j][i] = color;
+
+        }
+    }
+}
+
+void Graphic::BinarizationMPI()
+{
+    int w = image->width();
+    int h = image->height();
+
+    QRgb *imageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
+    }
+
+    int procRank, procSize;
+    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
+    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
+
+
+    int x1 = width/procSize * procRank; //начало
+    //if (x1 == 0) ++x1;
+    int lineH = height;
+    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
+
+    for (int i = x1; i < x2; i++)
         for (int j = 0; j < h; j++)
         {
             int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
@@ -942,19 +731,20 @@ QImage *Graphic::outlineSelectionParallel(int threadCount)
     ThreadGraphic *ptr;
     int x = 1;
     for (int i = 0; i < threadCount; i++){
-        rects.append(QRect(x - 1, 0, i == threadCount - 1 ? image->width() - x - 1  : lineW + 1, lineH));
+        rects.append(QRect(x, 1, i == threadCount - 1 ? image->width() - x - 1  : lineW, lineH - 2));
         ptr = new ThreadGraphic();
         threads.append(ptr);
         threads[threads.count() - 1]->setImagePointer(image);
         threads[threads.count() - 1]->setRect(rects[rects.count() - 1]);
-        //threads[threads.count() - 1]->setYUVPointers(Y, U, V);
+        threads[threads.count() - 1]->setYUVPointers(Y, U, V);
         threads[threads.count() - 1]->setLIMIT(LIMIT);
         x += lineW;
-    }
-    qDebug()<<"Зашли в параллельный";
-    for (int i = 0; i < threadCount; i++){
         threads[i]->run();
     }
+    qDebug()<<"Зашли в параллельный";
+//    for (int i = 0; i < threadCount; i++){
+//        threads[i]->run();
+//    }
     bool theadFinished = false;
 
     while (!theadFinished){        //пока все потоки не завершат работу
@@ -968,17 +758,20 @@ QImage *Graphic::outlineSelectionParallel(int threadCount)
 
     }
 
-//здесь будем склеивать
-    QSize ptrSize = image->size();
-    delete image;
-    image = new QImage (ptrSize, QImage::Format_RGB32);
-    QPainter p (image);
-    x = 1;
-    for (int i = 0; i < threadCount; i++){
-        p.drawImage(QRect(x, 0, i == threadCount - 1 ? image->width() - x  : lineW, lineH), threads[i]->getImagePart()->copy(QRect(1, 1, lineW - 1, lineH)));
-        x += lineW;
-        delete threads[i];
-    }
+////здесь будем склеивать
+//    QSize ptrSize = image->size();
+//    delete image;
+//    image = new QImage (ptrSize, QImage::Format_RGB32);
+//    QPainter p (image);
+//    x = 1;
+//    for (int i = 0; i < threadCount; i++){
+//        p.drawImage(QRect(x, 0, i == threadCount - 1 ? image->width() - x  : lineW, lineH), threads[i]->getImagePart()->copy(QRect(1, 1, lineW - 1, lineH)));
+//        x += lineW;
+//        delete threads[i];
+//    }
+        for (int i = 0; i < threadCount; i++){
+            delete threads[i];
+        }
     threads.clear();
     return image;
 }
@@ -991,6 +784,38 @@ QImage *Graphic::outlineSelectionOMP(int threadCount)
     setYUVOMP();
     sobelOperatorOMP();
     BinarizationOMP();
+    return image;
+}
+
+QImage *Graphic::outlineSelectionMPI(int threadCount)
+{
+    int procRank, procSize;
+    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
+    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
+    if (procRank == 0){
+        qDebug()<<"Зашли в MPI";
+        qDebug()<<procSize;
+
+        width = image->width();
+        height = image->height();
+        // RGB32 to YUV420
+        int size = width * height;
+        // Y
+        Y = new unsigned char [size];
+        U = new unsigned char [size];
+        V = new unsigned char [size];
+    }
+
+    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы закончить подготовку
+
+    setYUVMatixMPI();
+    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
+    setYUVMPI();
+    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
+    sobelOperatorMPI();
+    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
+    BinarizationMPI();
+    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
     return image;
 }
 

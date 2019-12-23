@@ -38,26 +38,6 @@ QPixmap* Dialog::OK ()
 
 }
 
-void Dialog::Balance ()
-{
-    if (myGr->reserve != nullptr)
-    {
-        float brPl = ui->horizontalSlider->value();
-        if (myGr->imageItem != nullptr)
-            delete myGr->imageItem;
-        switch (func) {
-        case 1:
-            myGr->imageItem = myGr->myScene->addPixmap(*myGr->Brightness(brPl));
-            break;
-        case 2:
-            myGr->imageItem = myGr->myScene->addPixmap(*myGr->Contrast(brPl));
-            break;
-        default:
-            break;
-        }
-
-    }
-}
 
 void Dialog::Brightness()
 {

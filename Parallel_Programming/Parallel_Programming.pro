@@ -6,8 +6,21 @@
 
 QT       += core gui widgets
 
+INCLUDEPATH+="C:\Program Files (x86)\MPICH2\include"
+
+LIBS += "C:\Program Files (x86)\MPICH2\lib\mpi.lib"
+#"C:\Program Files (x86)\OpenMPI_1.6.2\lib\libmpi.lib" \
+#        "C:\Program Files (x86)\OpenMPI_1.6.2\lib\libmpi_cxx.lib" \
+#        "C:\Program Files (x86)\OpenMPI_1.6.2\lib\libopen-pal.lib" \
+#        "C:\Program Files (x86)\OpenMPI_1.6.2\lib\libopen-rte.lib"
+
 QMAKE_LIBS+=-static -lgomp -lpthread
+
 QMAKE_CXXFLAGS+=-msse3 -fopenmp
+
+QMAKE_LFLAGS += -fopenmp
+
+
 #QMAKE_CXXFLAGS+=-U_WIN32
 
 TARGET = Parallel_Programming

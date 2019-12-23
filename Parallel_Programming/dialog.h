@@ -30,7 +30,6 @@ public slots:
     QPixmap* OK ();
     void Brightness ();
     void Contrast ();
-    void Balance ();
 };
 
 #endif // DIALOG_H

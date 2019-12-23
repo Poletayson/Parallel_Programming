@@ -16,6 +16,7 @@
 #include <QPainter>
 
 #include <omp.h>
+#include <mpi.h>
 
 class Graphic : public QGraphicsView
 {
@@ -45,14 +46,6 @@ public:
     QPixmap* getGray();
     //QPixmap* getNegative ();
     QPixmap* Brightness(int val);
-    QPixmap* Contrast (float val);
-
-    QPixmap* Median ();     //медианный фильтр и Гауссовский
-    QPixmap* Gauss ();
-    QPixmap* Rezk ();     //медианный фильтр и Гауссовский
-
-    QPixmap* Aquarel ();
-    QPixmap* MyFilter (int k);     //Мой фильтр, получившийся из резкости: все цвета за диапазоном - черные
 
     bool setYUVMatix ();
     bool setYUV ();
@@ -63,6 +56,11 @@ public:
     bool setYUVOMP ();
     void sobelOperatorOMP ();
     void BinarizationOMP ();
+
+    bool setYUVMatixMPI ();
+    bool setYUVMPI ();
+    void sobelOperatorMPI ();
+    void BinarizationMPI ();
 
 
     QColor matrixColorMul (QColor colors[3][3], int matrix[3][3]);
@@ -77,6 +75,7 @@ public:
     QImage* outlineSelectionLinear ();
     QImage* outlineSelectionParallel (int threadCount);
     QImage* outlineSelectionOMP (int threadCount);
+    QImage* outlineSelectionMPI (int threadCount);
     QImage* sobelOperatorOneChannel (unsigned char *matix);
 
 
@@ -97,6 +96,8 @@ private:
     int LIMIT = 225;
 
     QImage *image;
+    int width;
+    int height;
     unsigned char *Y, *U, *V;
 };
 

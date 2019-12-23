@@ -58,10 +58,10 @@ private:
     void sobelOperator();       ///ДОДЕЛАТЬ!!!
     void binarization ();
 
-    bool setYUVMatixPart();
-    bool setYUVPart();
-    void sobelOperatorPart();
-    void binarizationPart();
+//    bool setYUVMatixPart();
+//    bool setYUVPart();
+//    void sobelOperatorPart();
+//    void binarizationPart();
 };
 
 #endif // THREADGRAPHIC_H

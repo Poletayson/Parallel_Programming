@@ -29,13 +29,13 @@ void ThreadGraphic::setYUVPointers(unsigned char *Yp, unsigned char *Up, unsigne
 void ThreadGraphic::setRect(const QRect &value)
 {
     rect = value;
-    imagePart = new QImage (image->copy(rect));
+//    imagePart = new QImage (image->copy(rect));
 }
 
 bool ThreadGraphic::setYUVMatix()
 {
     int width = rect.x() + rect.width();
-    int height = rect.height();
+    int height = image->height();
 
     if(imageReserv->format()!=QImage::Format_RGB32    && imageReserv->format() != QImage::Format_ARGB32)
     {
@@ -72,7 +72,7 @@ bool ThreadGraphic::setYUV()
     {
 //        QColor* col = new QColor ();
         int w = rect.x() + rect.width();
-        int h = rect.height();
+        int h = image->height();
 
         QRgb *imageBytes[h];
         for (int i = 0; i < h; i++){
@@ -107,12 +107,11 @@ void ThreadGraphic::sobelOperator()
     int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
     int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
 
-
 //    QColor col[3][3];
-
 //    QImage newImage = QImage (*image);
+
     int w = rect.x() + rect.width();
-//    int allw = image->width();
+    int allw = image->width();
     int h = image->height();
 
     QRgb *imageBytes[h];
@@ -123,15 +122,15 @@ void ThreadGraphic::sobelOperator()
 
     for (int i = 0; i < h; i++){
         newImageBytes[i] = new QRgb[w];
-        for (int j = 0; j < w; j++){
+        for (int j = rect.x(); j < w; j++){
             newImageBytes[i][j] = imageBytes[i][j];
         }
     }
 
-    for (int i = 1; i < w-1; i++) {
+    for (int i = rect.x(); i < w; i++) {
         int kx = -1;        //обозначают границы
         int ky = -1;
-        for (int j = 1; j < h-1; j++) {
+        for (int j = 0; j < h; j++) {
             QRgb col[3][3];
             col[0][0] = newImageBytes[j - (ky < 0 ? 0 : 1)][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
             col[0][1] = newImageBytes[j][i - (kx < 0 ? 0 : 1)];//newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
@@ -197,10 +196,10 @@ void ThreadGraphic::sobelOperator()
 void ThreadGraphic::run()
 {
     imageReserv = new QImage (*image);
-    setYUVMatixPart();
-    setYUVPart();
-    sobelOperatorPart();
-    binarizationPart();
+    setYUVMatix();
+    setYUV();
+    sobelOperator();
+    binarization();
 }
 
 void ThreadGraphic::setLIMIT(int value)
@@ -306,163 +305,186 @@ unsigned char ThreadGraphic::componentNormir(unsigned char colorX, unsigned char
 
 void ThreadGraphic::binarization()
 {
-        QColor col;
-        int bright;           //яркость
-        int w = rect.x() + rect.width();
-//        int allw = image->width();
-        int h = image->height();
-        for (int i = rect.x(); i < w; i++)
-            for (int j = 0; j < h; j++)
-            {
-                col = image->pixelColor(i, j);
-                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
-
-                if (bright > LIMIT)       //ярость больше порога?
-                {
-                    col.setBlue(255);
-                    col.setGreen(255);
-                    col.setRed(255);
-                }
-                else
-                {
-                    col.setBlue(0);
-                    col.setGreen(0);
-                    col.setRed(0);
-                }
-                image->setPixelColor(i, j, col);
-            }
-}
+    int w = rect.x() + rect.width();
+    int h = image->height();
 
 
-bool ThreadGraphic::setYUVMatixPart()
-{
-    int width = imagePart->width();
-    int height = imagePart->height();
-
-    if(imagePart->format()!=QImage::Format_RGB32 && imagePart->format() != QImage::Format_ARGB32)
-    {
-       printf("Wrong image format\n");
-       return false;
+    QRgb *imageBytes[h];
+    for (int i = 0; i < h; i++){
+        imageBytes[i] = (QRgb*)(image->scanLine(i));
     }
 
-    // RGB32 to YUV420
-    int size = width * height;
-    // Y
-    Y = new unsigned char [size];
-    U = new unsigned char [size];
-    V = new unsigned char [size];
-
-    QColor tempColor;
-    for (int i = 0; i < width; i++)
-       for (int j = 0; j < height; j++)
-       {
-         tempColor = imagePart->pixelColor(i, j);//Canvas->Pixels[i][j];
-         int r = tempColor.red();
-         int g = tempColor.green();
-         int b = tempColor.blue();
-
-
-         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
-         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
-         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
-       }
-    return true;
-}
-
-bool ThreadGraphic::setYUVPart()
-{
-    if (imagePart != nullptr)
-    {
-        QColor* col = new QColor ();
-        int w = imagePart->width();
-        int h = imagePart->height();
-        for (int i = 0; i < w; i++)
-            for (int j = 0; j < h; j++)
-            {
-                delete col;
-                col = new QColor (imagePart->pixelColor(i, j));
-                col->setRed(Y[j * w + i]);
-                col->setGreen(U[j * w + i]);
-                col->setBlue(V[j * w + i]);
-
-                imagePart->setPixelColor(i, j, *col);
-            }
-        delete col;
-        return true;
-    }
-    else
-        return false;
-}
-
-void ThreadGraphic::sobelOperatorPart()
-{
-    int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
-    int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
-
-    QColor col[3][3];
-
-    QImage newImage = QImage (*imagePart);
-    int w = imagePart->width();
-    int h = imagePart->height();
-
-    int kx, ky;     //обозначают границы
-    for (int i = 1; i < w-1; i++) {
-        kx = -1;
-        ky = -1;
-        for (int j = 1; j < h-1; j++) {
-            col[0][0] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
-            col[0][1] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
-            col[0][2] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
-            col[1][0] = newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
-            col[1][1] = newImage.pixelColor(i, j);
-            col[1][2] = newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
-            col[2][0] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
-            col[2][1] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
-            col[2][2] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
-            QColor color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
-
-            imagePart->setPixelColor (i, j, color);
-
-            if (i == w - 1)
-                ky = 1;
-            else
-                ky = 0;
-            if (j == h - 1)
-                kx = 1;
-            else //if (j != 0)
-                    kx = 0;
-//                else
-//                    ky = -1;
-        }
-    }
-}
-
-void ThreadGraphic::binarizationPart()
-{
-    QColor col;
-    int bright;           //яркость
-    int w = imagePart->width();
-    int h = imagePart->height();
-    for (int i = 0; i < w; i++)
+    for (int i = rect.x(); i < w; i++)
         for (int j = 0; j < h; j++)
         {
-            col = imagePart->pixelColor(i, j);
-            bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
+            int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
 
             if (bright > LIMIT)       //ярость больше порога?
             {
-                col.setBlue(255);
-                col.setGreen(255);
-                col.setRed(255);
+                imageBytes[j][i] = qRgb(255, 255, 255);
             }
             else
             {
-                col.setBlue(0);
-                col.setGreen(0);
-                col.setRed(0);
+                imageBytes[j][i] = qRgb(0, 0, 0);
             }
-            imagePart->setPixelColor(i, j, col);
         }
+//        QColor col;
+//        int bright;           //яркость
+//        int w = rect.x() + rect.width();
+////        int allw = image->width();
+//        int h = image->height();
+//        for (int i = rect.x(); i < w; i++)
+//            for (int j = 0; j < h; j++)
+//            {
+//                col = image->pixelColor(i, j);
+//                bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
+
+//                if (bright > LIMIT)       //ярость больше порога?
+//                {
+//                    col.setBlue(255);
+//                    col.setGreen(255);
+//                    col.setRed(255);
+//                }
+//                else
+//                {
+//                    col.setBlue(0);
+//                    col.setGreen(0);
+//                    col.setRed(0);
+//                }
+//                image->setPixelColor(i, j, col);
+//            }
 }
+
+
+//bool ThreadGraphic::setYUVMatixPart()
+//{
+//    int width = imagePart->width();
+//    int height = imagePart->height();
+
+//    if(imagePart->format()!=QImage::Format_RGB32 && imagePart->format() != QImage::Format_ARGB32)
+//    {
+//       printf("Wrong image format\n");
+//       return false;
+//    }
+
+//    // RGB32 to YUV420
+//    int size = width * height;
+//    // Y
+//    Y = new unsigned char [size];
+//    U = new unsigned char [size];
+//    V = new unsigned char [size];
+
+//    QColor tempColor;
+//    for (int i = 0; i < width; i++)
+//       for (int j = 0; j < height; j++)
+//       {
+//         tempColor = imagePart->pixelColor(i, j);//Canvas->Pixels[i][j];
+//         int r = tempColor.red();
+//         int g = tempColor.green();
+//         int b = tempColor.blue();
+
+
+//         Y[j * width + i] = (0.299 * r + 0.587 * g + 0.114 * b);
+//         U[j * width + i] = (-0.14713 * r - 0.28886 * g + 0.436 * b + 128);
+//         V[j * width + i] = (0.615 * r - 0.51499 * g - 0.10001 * b + 128);
+//       }
+//    return true;
+//}
+
+//bool ThreadGraphic::setYUVPart()
+//{
+//    if (imagePart != nullptr)
+//    {
+//        QColor* col = new QColor ();
+//        int w = imagePart->width();
+//        int h = imagePart->height();
+//        for (int i = 0; i < w; i++)
+//            for (int j = 0; j < h; j++)
+//            {
+//                delete col;
+//                col = new QColor (imagePart->pixelColor(i, j));
+//                col->setRed(Y[j * w + i]);
+//                col->setGreen(U[j * w + i]);
+//                col->setBlue(V[j * w + i]);
+
+//                imagePart->setPixelColor(i, j, *col);
+//            }
+//        delete col;
+//        return true;
+//    }
+//    else
+//        return false;
+//}
+
+//void ThreadGraphic::sobelOperatorPart()
+//{
+//    int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
+//    int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
+
+//    QColor col[3][3];
+
+//    QImage newImage = QImage (*imagePart);
+//    int w = imagePart->width();
+//    int h = imagePart->height();
+
+//    int kx, ky;     //обозначают границы
+//    for (int i = 1; i < w-1; i++) {
+//        kx = -1;
+//        ky = -1;
+//        for (int j = 1; j < h-1; j++) {
+//            col[0][0] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+//            col[0][1] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j);
+//            col[0][2] = newImage.pixelColor(i - (kx < 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+//            col[1][0] = newImage.pixelColor(i, j - (ky < 0 ? 0 : 1));
+//            col[1][1] = newImage.pixelColor(i, j);
+//            col[1][2] = newImage.pixelColor(i, j + (ky > 0 ? 0 : 1));
+//            col[2][0] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j - (ky < 0 ? 0 : 1));
+//            col[2][1] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j);
+//            col[2][2] = newImage.pixelColor(i + (kx > 0 ? 0 : 1), j + (ky > 0 ? 0 : 1));
+//            QColor color = colorNormir(matrixColorMul(col, sobelMaskX), matrixColorMul(col, sobelMaskY));
+
+//            imagePart->setPixelColor (i, j, color);
+
+//            if (i == w - 1)
+//                ky = 1;
+//            else
+//                ky = 0;
+//            if (j == h - 1)
+//                kx = 1;
+//            else //if (j != 0)
+//                    kx = 0;
+////                else
+////                    ky = -1;
+//        }
+//    }
+//}
+
+//void ThreadGraphic::binarizationPart()
+//{
+//    QColor col;
+//    int bright;           //яркость
+//    int w = imagePart->width();
+//    int h = imagePart->height();
+//    for (int i = 0; i < w; i++)
+//        for (int j = 0; j < h; j++)
+//        {
+//            col = imagePart->pixelColor(i, j);
+//            bright = static_cast<int> (0.299*col.red() + 0.5876*col.green() + 0.114*col.blue());
+
+//            if (bright > LIMIT)       //ярость больше порога?
+//            {
+//                col.setBlue(255);
+//                col.setGreen(255);
+//                col.setRed(255);
+//            }
+//            else
+//            {
+//                col.setBlue(0);
+//                col.setGreen(0);
+//                col.setRed(0);
+//            }
+//            imagePart->setPixelColor(i, j, col);
+//        }
+//}
 
 
