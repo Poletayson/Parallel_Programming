@@ -23,7 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //   connect(ui->horizontalSlider, SIGNAL(sliderReleased()), this, SLOT(sliderOb()));
    connect(ui->ButtonNoise, SIGNAL(clicked()), this, SLOT(setNoise ()));
 //   connect(ui->ButtonMedian, SIGNAL(clicked()), this, SLOT(Median ()));
-   connect(ui->ButtonGauss, SIGNAL(clicked()), this, SLOT(Gauss ()));
+   //connect(ui->ButtonGauss, SIGNAL(clicked()), this, SLOT(Gauss ()));
 
    myGraphic2->setLIMIT(ui->horizontalSlider->value());
 //    ui->verticalLayout->addWidget(myGraphic);

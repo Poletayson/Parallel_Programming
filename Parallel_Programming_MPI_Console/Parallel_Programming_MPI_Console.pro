@@ -4,11 +4,15 @@
 #
 #-------------------------------------------------
 
-QT       += core gui widgets
+QT       += core
 
-INCLUDEPATH+="C:\Program Files (x86)\MPICH2\include"
+INCLUDEPATH+="C:\Program Files (x86)\Microsoft SDKs\MPI\Include"
 
-LIBS += "C:\Program Files (x86)\MPICH2\lib\mpi.lib"
+LIBS += "C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x86\msmpi.lib"
+
+#INCLUDEPATH+="C:\Program Files (x86)\MPICH2\include"
+
+#LIBS += "C:\Program Files (x86)\MPICH2\lib\mpi.lib"
 #"C:\Program Files (x86)\OpenMPI_1.6.2\lib\libmpi.lib" \
 #        "C:\Program Files (x86)\OpenMPI_1.6.2\lib\libmpi_cxx.lib" \
 #        "C:\Program Files (x86)\OpenMPI_1.6.2\lib\libopen-pal.lib" \
@@ -30,7 +34,7 @@ QMAKE_LFLAGS += -fopenmp
 
 #QMAKE_CXXFLAGS+=-U_WIN32
 
-TARGET = Parallel_Programming
+TARGET = Parallel_Programming_MPI_Console
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -44,25 +48,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
-CONFIG += c++11
+CONFIG += c++11 console
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
-    graphic.cpp \
-    dialog.cpp \
-    threadgraphic.cpp
+    graphic.cpp
 
 HEADERS += \
-        mainwindow.h \
-    graphic.h \
-    dialog.h \
-    threadgraphic.h
+    graphic.h
 
 
-FORMS += \
-        mainwindow.ui \
-    dialog.ui
+FORMS +=
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
