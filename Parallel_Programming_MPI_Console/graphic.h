@@ -11,7 +11,9 @@
 //#include <threadgraphic.h>
 #include <QDebug>
 #include <QPainter>
+#include <QBuffer>
 #include <iostream>
+
 
 #include <omp.h>
 #include <mpi.h>
@@ -31,7 +33,12 @@ public:
     void clear ();      //очистить
 
     void GetFileImage (QString file);
-                   //отрисовка
+
+    QImage* outlineSelectionLinear ();
+    QImage* outlineSelectionOMP (int threadCount);
+    QImage* outlineSelectionMPI (int argc, char *argv[]);
+    QImage* sobelOperatorOneChannel (unsigned char *matix);
+
 
     bool setYUVMatix ();
     bool setYUV ();
@@ -58,10 +65,7 @@ public:
 
 
 
-    QImage* outlineSelectionLinear ();
-    QImage* outlineSelectionOMP (int threadCount);
-    QImage* outlineSelectionMPI (int argc, char *argv[]);
-    QImage* sobelOperatorOneChannel (unsigned char *matix);
+
 
 
     QImage *getImage() const;
@@ -81,8 +85,10 @@ private:
     int LIMIT = 225;
 
     QImage *image;
+    QImage *imagePart;
     int width;
     int height;
+    int x1, x2;
     unsigned char *Y, *U, *V;
 };
 

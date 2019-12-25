@@ -6,9 +6,15 @@
 
 QT       += core
 
-INCLUDEPATH+="C:\Program Files (x86)\Microsoft SDKs\MPI\Include"
+INCLUDEPATH+="C:\Program Files\Microsoft HPC Pack 2008 SDK\Include"
+#    "C:\Program Files\Microsoft HPC Pack 2008 SDK\Bin"
 
-LIBS += "C:\Program Files (x86)\Microsoft SDKs\MPI\Lib\x86\msmpi.lib"
+
+LIBS += "C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386\msmpi.lib"
+#"C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386\msmpifec.lib" \
+#"C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386\msmpifes.lib" \
+#"C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386\msmpifmc.lib" \
+#"C:\Program Files\Microsoft HPC Pack 2008 SDK\Lib\i386\msmpifms.lib"
 
 #INCLUDEPATH+="C:\Program Files (x86)\MPICH2\include"
 

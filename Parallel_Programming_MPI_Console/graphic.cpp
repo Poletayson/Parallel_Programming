@@ -266,25 +266,27 @@ void Graphic::BinarizationOMP()
 
 bool Graphic::setYUVMatixMPI()
 {
-    if(image->format()!=QImage::Format_RGB32    && image->format() != QImage::Format_ARGB32)
+    int width = imagePart->width();
+    int height = imagePart->height();
+
+    if(imagePart->format()!=QImage::Format_RGB32    && imagePart->format() != QImage::Format_ARGB32)
     {
        printf("Wrong image format\n");
        return false;
     }
-    int procRank, procSize;
-    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
-    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
 
+    // RGB32 to YUV420
+    int size = width * height;
+    // Y
+    Y = new unsigned char [size];
+    U = new unsigned char [size];
+    V = new unsigned char [size];
 
-    int x1 = width/procSize * procRank; //начало
-    //if (x1 == 0) ++x1;
-    int lineH = height;
-    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
-
-    for (int i = x1; i < x2; i++)
+    QColor tempColor;
+    for (int i = 0; i < width; i++)
        for (int j = 0; j < height; j++)
        {
-         QColor tempColor = image->pixelColor(i, j);//Canvas->Pixels[i][j];
+         tempColor = imagePart->pixelColor(i, j);//Canvas->Pixels[i][j];
          int r = tempColor.red();
          int g = tempColor.green();
          int b = tempColor.blue();
@@ -298,24 +300,24 @@ bool Graphic::setYUVMatixMPI()
 
 bool Graphic::setYUVMPI()
 {
-    if (image != nullptr)
+    if (imagePart != nullptr)
     {
         int procRank, procSize;
         MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
         MPI_Comm_size(MPI_COMM_WORLD, &procSize);
 
 
-        int x1 = width/procSize * procRank; //начало
+        //int x1 = width/procSize * procRank; //начало
         //if (x1 == 0) ++x1;
-        int lineH = height;
-        int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
+        //int lineH = height;
+        //int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
 
-        int w = image->width();
-        int h = image->height();
+        int w = imagePart->width();
+        int h = imagePart->height();
 
         QRgb *imageBytes[h];
         for (int i = 0; i < h; i++){
-            imageBytes[i] = (QRgb*)(image->scanLine(i));
+            imageBytes[i] = (QRgb*)(imagePart->scanLine(i));
         }
 
         for (int i = x1; i < x2; i++)
@@ -330,29 +332,18 @@ bool Graphic::setYUVMPI()
 
 void Graphic::sobelOperatorMPI()
 {
+    int w = imagePart->width();
+    int h = imagePart->height();
+
     int sobelMaskY[3][3] = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
     int sobelMaskX[3][3] = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
-
-    int w = image->width();
-    int h = image->height();
-
-    int procRank, procSize;
-    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
-    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
-
-
-    int x1 = width/procSize * procRank; //начало
-    if (x1 == 0) ++x1;
-    int lineH = height;
-    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width - 1;
 
     QRgb *imageBytes[h];
     QRgb *newImageBytes[h];
     for (int i = 0; i < h; i++){
-        imageBytes[i] = (QRgb*)(image->scanLine(i));
+        imageBytes[i] = (QRgb*)(imagePart->scanLine(i));
     }
 
-//#pragma omp parallel for
     for (int i = 0; i < h; i++){
         newImageBytes[i] = new QRgb[w];
         for (int j = 0; j < w; j++){
@@ -360,8 +351,7 @@ void Graphic::sobelOperatorMPI()
         }
     }
 
-//#pragma omp parallel for
-    for (int i = x1; i < x2; i++) {
+    for (int i = 1; i < w-1; i++) {
         int kx = -1;        //обозначают границы
         int ky = -1;
         for (int j = 1; j < h-1; j++) {
@@ -397,25 +387,15 @@ void Graphic::sobelOperatorMPI()
 
 void Graphic::BinarizationMPI()
 {
-    int w = image->width();
-    int h = image->height();
+    int w = imagePart->width();
+    int h = imagePart->height();
 
     QRgb *imageBytes[h];
     for (int i = 0; i < h; i++){
-        imageBytes[i] = (QRgb*)(image->scanLine(i));
+        imageBytes[i] = (QRgb*)(imagePart->scanLine(i));
     }
 
-    int procRank, procSize;
-    MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
-    MPI_Comm_size(MPI_COMM_WORLD, &procSize);
-
-
-    int x1 = width/procSize * procRank; //начало
-    //if (x1 == 0) ++x1;
-    int lineH = height;
-    int x2 = (procRank != procSize - 1) ? x1 + width/procSize : width;
-
-    for (int i = x1; i < x2; i++)
+    for (int i = 0; i < w; i++)
         for (int j = 0; j < h; j++)
         {
             int bright = static_cast<int> (0.299 * qRed(imageBytes[j][i]) + 0.5876 * qGreen(imageBytes[j][i]) + 0.114 * qBlue(imageBytes[j][i]));    //яркость
@@ -429,6 +409,7 @@ void Graphic::BinarizationMPI()
                 imageBytes[j][i] = qRgb(0, 0, 0);
             }
         }
+
 }
 
 QColor Graphic::matrixColorMul(QColor colors[3][3], int matrix[3][3])
@@ -638,35 +619,197 @@ QImage *Graphic::outlineSelectionOMP(int threadCount)
 QImage *Graphic::outlineSelectionMPI(int argc, char *argv[])
 {
     MPI_Init(&argc, &argv);
+    double t1 = MPI_Wtime();
     int procRank, procSize;
     MPI_Comm_rank(MPI_COMM_WORLD, &procRank);   //получаем номер процесса
     MPI_Comm_size(MPI_COMM_WORLD, &procSize);
 
-
-    //if (procRank == 0){
+    if (procRank == 0){
         std::cout<<"ThreadCount: "<<procSize<<std::endl;
-
         width = image->width();
         height = image->height();
+
+        int lineW = width/procSize; //ширина одной полоски изображения
+        int x = 0;
+//        x1 = x;
+//        x2 = (procSize == 1) ? width - 2  : x + lineW;
+
+
+        imagePart = new QImage (image->copy(x, 0, (procSize == 1) ? width : lineW + 2, height));  //копируем кусок
+//        std::cout<<"procRank = "<< procRank<<", w = "<< imagePart->width()<<", h = "<< imagePart->height()<<"\n";
+//        std::cout.flush();
+
         // RGB32 to YUV420
-        int size = width * height;
-        // Y
-        Y = new unsigned char [size];
-        U = new unsigned char [size];
-        V = new unsigned char [size];
-    //}
+//        int size = width * height;
+//        // Y
+//        Y = new unsigned char [size];
+//        U = new unsigned char [size];
+//        V = new unsigned char [size];
 
-    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы закончить подготовку
+        for (int i = 1; i < procSize; i++){
+            QImage imagePtr;
+            x += lineW;
+
+            imagePtr = image->copy(x - 2, 0, (i == procSize - 1) ? width - x : lineW + 2, height);
+
+            QByteArray block;
+            QDataStream out(&block, QIODevice::WriteOnly);
+
+            out << imagePtr;
+            out.device()->seek(0);
+
+            //отправляем x1
+            int size = block.size();
+
+//            std::cout<<size<<" size send\n";
+//            std::cout.flush();
+            MPI_Send(&size,
+                     1,
+                     MPI_INT,
+                     i,         //номер процесса
+                     0,     //тег x1
+                     MPI_COMM_WORLD);
+
+            char *bf = block.data();
+            //отправляем кусок
+            MPI_Send(bf,
+                     size,
+                     MPI_BYTE, //MPI_BYTE
+                     i,         //номер процесса
+                     3,     //тег самого содержимого
+                     MPI_COMM_WORLD);
+        }
+    }
+
+    //отправили
+
+    if (procRank != 0){
+        int size;   //принимаем размер
+        MPI_Recv(&size,
+                 1,
+                 MPI_INT,
+                 0,         //номер процесса
+                 0,     //тег x1
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+
+//будем принимать кусок
+        char *bf = new char[size];
+        MPI_Recv(bf,
+                 size,
+                 MPI_BYTE,
+                 0,         //номер процесса
+                 3,     //тег изображения
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        QByteArray *ba = new QByteArray();
+        ba->append(bf, size);   //наполняем
+        QDataStream in(*ba);
+//        std::cout<<"procRank = "<< procRank<<", baS = "<< ba->size()<<", S = "<< size<<"\n";
+//        std::cout.flush();
+
+        QImage im;
+        in >> im;
+        imagePart = new QImage(im);
+        //новое изображение
+
+//        std::cout<<"procRank = "<< procRank<<", wPart = "<< imagePart->width()<<", hPart = "<< imagePart->height()<<"\n";
+//        std::cout.flush();
+    }
     setYUVMatixMPI();
-    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
     setYUVMPI();
-    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
     sobelOperatorMPI();
-    MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
     BinarizationMPI();
+//    std::cout<<"BinarizationMPI_Finished\n";
+//    std::cout.flush();
+//теперь нужно сшить
+    //Здесь будем отправлять
+    if (procRank != 0){
+
+        QByteArray block;
+        QDataStream out(&block, QIODevice::WriteOnly);
+//        std::cout<<"procRank = "<< procRank<<", wPartAA = "<< imagePart->width()<<", hPartAA = "<< imagePart->height()<<"\n";
+//        std::cout.flush();
+        QImage ptr = *imagePart;
+        out << ptr;
+        out.device()->seek(0);
+
+        int size = block.size();
+//        std::cout<<size<<" size sendToMain\n";
+//        std::cout.flush();
+
+        MPI_Send(&size,
+                 1,
+                 MPI_INT,
+                 0,         //номер процесса
+                 4,     //тег size
+                 MPI_COMM_WORLD);
+
+        char *bf = block.data();
+        //отправляем кусок
+        MPI_Send(bf,
+                 size,
+                 MPI_BYTE, //MPI_BYTE
+                 0,         //номер процесса
+                 5,     //тег самого содержимого
+                 MPI_COMM_WORLD);
+    }
+
     MPI_Barrier(MPI_COMM_WORLD);    //барьер, чтобы все потоки закончили
 
+    //Здесь будем принимать и сшивать
+    if (procRank == 0){
+        QList<QImage *> imlist;
+        imlist << imagePart;
+        int w = imagePart->width();
+
+        for (int i = 1; i < procSize; i++){
+            int size;   //принимаем размер
+            MPI_Recv(&size,
+                     1,
+                     MPI_INT,
+                     i,         //номер процесса
+                     4,     //тег x1
+                     MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//            std::cout<<size<<" recStart_size\n";
+//            std::cout.flush();
+
+            //будем принимать кусок
+            char *bf = new char[size];
+            MPI_Recv(bf,
+                     size,
+                     MPI_BYTE,
+                     i,         //номер процесса
+                     5,     //тег изображения
+                     MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            QByteArray *ba = new QByteArray();
+            ba->append(bf, size);   //наполняем
+            QDataStream in(*ba);
+            //        std::cout<<"procRank = "<< procRank<<", baS = "<< ba->size()<<", S = "<< size<<"\n";
+            //        std::cout.flush();
+
+            QImage im;
+            in >> im;
+            imlist << new QImage(im);
+            w += im.width();
+        }
+        //новое изображение
+        QImage *newIm = new  QImage (w, height, QImage::Format_ARGB32);
+        QPainter p(newIm);
+        int x = 0;
+        for (int i = 0; i < imlist.count(); i++){
+            //p.setCompositionMode(QPainter::co mode);
+            p.drawImage(x - 1, 0, imlist[i]->copy(1, 0, imlist[i]->width() - 1, imlist[i]->height()));
+            x += imlist[i]->width() - 1;
+        }
+        double t2 = MPI_Wtime();
+        std::cout<<"Time_MPI: "<<t2 - t1<<std::endl;
+        std::cout.flush();
+        image = newIm;
+    }
     MPI_Finalize();
+
     return image;
 }
 
